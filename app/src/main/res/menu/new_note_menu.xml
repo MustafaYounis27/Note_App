@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<item android:id="@+id/NewNoteChangeTextColor"
+     android:title="Text Color"/>
+    <item android:id="@+id/NewNoteAttachment"
+        android:title="upload picture"/>
+    <item android:id="@+id/NewNoteChangeBackGroundColor"
+        android:title="background Color"/>
+    <item android:id="@+id/NewNoteSaveAsPdf"
+        android:title="save as pdf"/>
+</menu>

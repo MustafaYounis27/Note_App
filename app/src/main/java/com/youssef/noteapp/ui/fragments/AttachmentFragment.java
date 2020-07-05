@@ -45,13 +45,13 @@ public class AttachmentFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        InitRecycler();
+        //InitRecycler();
     }
 
     private void InitRecycler(){
         RecyclerView recyclerView=view.findViewById(R.id.AttachmentRecycler);
         recyclerView.addItemDecoration(new DividerItemDecoration(getContext(),DividerItemDecoration.VERTICAL));
-        Images= WriteNewNoteActivity.SaveImagesString;
+        //Images= WriteNewNoteActivity.SaveImagesString;
         ImagesAdapter imagesAdapter=new ImagesAdapter(Images);
         recyclerView.setAdapter(imagesAdapter);
     }
@@ -76,7 +76,7 @@ public class AttachmentFragment extends Fragment {
             holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {
-                    WriteNewNoteActivity.SaveImagesString.remove(position);
+                //    WriteNewNoteActivity.SaveImagesString.remove(position);
                     Toast.makeText(getContext(), "deleted", Toast.LENGTH_SHORT).show();
                     return false;
                 }

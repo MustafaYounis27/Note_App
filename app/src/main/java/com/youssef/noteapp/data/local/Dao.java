@@ -3,6 +3,7 @@ package com.youssef.noteapp.data.local;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import com.youssef.noteapp.models.NoteModel;
 
@@ -16,10 +17,8 @@ public interface Dao {
     NoteModel GetOneNotes(int id);
     @Insert
     void Insert(NoteModel...noteModels);
-    @Query("DELETE FROM notes_table")
-    void Delete();
-    @Query("UPDATE notes_table SET Title=:title WHERE id=:id")
-    void UpdateTitle(String title,int id);
-    @Query("UPDATE notes_table SET Subject=:subject WHERE id=:id")
-    void UpdateSubject(String subject,int id);
+    @Delete
+    void Delete(NoteModel noteModel);
+    @Update
+    void UpdateNote(NoteModel noteModels);
 }

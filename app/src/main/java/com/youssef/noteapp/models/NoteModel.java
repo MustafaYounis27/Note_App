@@ -8,12 +8,13 @@ import androidx.room.Relation;
 import androidx.room.TypeConverter;
 import androidx.room.TypeConverters;
 
+import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity(tableName = "notes_table")
-public class NoteModel {
+public class NoteModel implements Serializable {
     @PrimaryKey(autoGenerate =true)
     int id;
     @ColumnInfo(name = "Title")
@@ -21,7 +22,7 @@ public class NoteModel {
     @ColumnInfo(name = "Subject")
     String Subject;
     @Embedded
-    public List<String> ImageUrl;
+    public String ImageUrl;
     @ColumnInfo(name = "VoiceUrl")
     String VoiceUrl;
     @ColumnInfo(name = "Date")
@@ -31,7 +32,7 @@ public class NoteModel {
     @ColumnInfo(name = "background_color")
     String background_color;
 
-    public NoteModel(String Title, String Subject, List<String> ImageUrl, String VoiceUrl, String Date, String text_color, String background_color) {
+    public NoteModel(String Title, String Subject, String ImageUrl, String VoiceUrl, String Date, String text_color, String background_color) {
         this.Title = Title;
         this.Subject = Subject;
         this.ImageUrl = ImageUrl;
@@ -89,11 +90,11 @@ public class NoteModel {
         Subject = subject;
     }
 
-    public List<String> getImageUrl() {
+    public String getImageUrl() {
         return ImageUrl;
     }
 
-    public void setImageUrl(List<String> imageUrl) {
+    public void setImageUrl(String imageUrl) {
         ImageUrl = imageUrl;
     }
 

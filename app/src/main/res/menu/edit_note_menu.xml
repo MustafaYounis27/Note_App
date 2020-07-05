@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/share_note"
+        android:title="Share note"
+        />
+    <item
+        android:id="@+id/upload_picture"
+        android:title="Upload picture"
+        />
+    <item
+        android:id="@+id/text_color"
+        android:title="Text color"
+        />
+    <item
+        android:id="@+id/background_color"
+        android:title="Background color"
+        />
+    <item
+        android:id="@+id/save_as_pdf"
+        android:title="Save as pdf"
+        />
+</menu>

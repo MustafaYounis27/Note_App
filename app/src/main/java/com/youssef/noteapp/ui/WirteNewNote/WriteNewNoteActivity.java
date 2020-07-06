@@ -83,7 +83,7 @@ public class WriteNewNoteActivity extends AppCompatActivity {
     private int Storage_Code = 100;
     private Uri image_uri;
     private List<Uri> ImagesUri = new ArrayList<>();
-    public static String SaveImagesString;
+    public  String SaveImagesString;
     public static final String FONT = "res/font/notonaskharabic_regular.ttf";
     public static final String ARABIC = "\u0627\u0644\u0633\u0639\u0631 \u0627\u0644\u0627\u062c\u0645\u0627\u0644\u064a";
     private SharedPreferences preferences;
@@ -127,7 +127,7 @@ public class WriteNewNoteActivity extends AppCompatActivity {
                 FragmentManager fragmentManager = getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                 Fragment fragment=new AttachmentFragment();
-                fragmentTransaction.replace(R.id.ree, fragment);
+                fragmentTransaction.replace(R.id.Frame, fragment);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
             }
@@ -489,6 +489,7 @@ public class WriteNewNoteActivity extends AppCompatActivity {
                     for (int i = 0; i < count; i++) {
                         image_uri = clipData.getItemAt(i).getUri();
                         ImagesUri.add(image_uri);
+                        SaveImagesString += "{"+image_uri.toString ();
                     }
 
                 } else if (data.getData() != null) {
@@ -496,6 +497,7 @@ public class WriteNewNoteActivity extends AppCompatActivity {
                         Attachment.setVisibility(View.VISIBLE);
                     }
                     ImagesUri.add(data.getData());
+                    SaveImagesString += "{"+data.getData();
                 }
                 SaveImageInMyFile(ImagesUri);
             }
@@ -562,7 +564,6 @@ public class WriteNewNoteActivity extends AppCompatActivity {
                 outChannel.close();
         }
         Uri Image = Uri.fromFile(expFile);
-        SaveImagesString = Image.toString();
         return expFile;
     }
 

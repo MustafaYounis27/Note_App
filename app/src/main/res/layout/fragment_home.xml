@@ -9,60 +9,111 @@
     tools:context=".ui.fragments.HomeFragment"
     >
 
-    <LinearLayout
-        android:id="@+id/edit_lin"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:orientation="horizontal"
-        android:background="#EF5D5D"
-        android:padding="10dp"
+        android:layout_height="wrap_content"
         >
 
-        <Button
-            android:id="@+id/close"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="cancel"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/white"
+        <LinearLayout
+            android:id="@+id/edit_lin"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
             android:background="#EF5D5D"
-            android:layout_marginRight="5dp"
-            />
+            android:padding="10dp"
+            android:visibility="gone"
+            >
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
+            <Button
+                android:id="@+id/close"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="cancel"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:background="#EF5D5D"
+                android:layout_marginRight="5dp"
+                />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="#EF5D5D"
+                />
+
+            <Button
+                android:id="@+id/pin"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="pin"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:background="#EF5D5D"
+                android:layout_marginRight="5dp"
+                />
+
+            <Button
+                android:id="@+id/delete"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="Delete"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:background="#EF5D5D"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/search_bar"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
             android:background="#EF5D5D"
-            />
+            android:padding="5dp"
+            >
 
-        <Button
-            android:id="@+id/pin"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="pin"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/white"
-            android:background="#EF5D5D"
-            android:layout_marginRight="5dp"
-            />
+            <ImageView
+                android:id="@+id/close_search"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginRight="5dp"
+                android:visibility="gone"
+                android:src="@drawable/close_icon"
+                />
 
-        <Button
-            android:id="@+id/delete"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="Delete"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/white"
-            android:background="#EF5D5D"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            />
+            <EditText
+                android:id="@+id/search_field"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:hint="search for note"
+                android:padding="5dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginLeft="5dp"
+                android:textSize="20sp"
+                android:visibility="gone"
+                android:textColor="@android:color/black"
+                android:background="@drawable/solid_white_backgroung"
+                />
 
-    </LinearLayout>
+            <ImageView
+                android:id="@+id/search_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="5dp"
+                android:src="@drawable/search_icon"
+                />
+
+        </LinearLayout>
+
+    </RelativeLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/RecyclerView"

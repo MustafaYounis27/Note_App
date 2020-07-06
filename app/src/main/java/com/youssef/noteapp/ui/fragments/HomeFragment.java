@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -12,18 +13,22 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.Query;
 import androidx.room.Room;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,10 +47,13 @@ public class HomeFragment extends Fragment {
     private View view;
     private RecyclerView recyclerView;
     private Button deleteButton, pinButton, closeButton;
-    private LinearLayout editLinear;
+    private LinearLayout editLinear, searchLinear;
+    EditText searchField;
+    ImageView searchIcon, closeIcon;
     private AppDataBase db;
     private ProgressDialog dialog;
     List<NoteModel> noteModels;
+    List<NoteModel> searchModels;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,9 +76,70 @@ public class HomeFragment extends Fragment {
         InitRecycler();
         InitData();
         new GetData().execute();
+        onSearchClick();
     }
 
-    private void onClick(final NoteModel noteModel)
+    private void onSearchClick()
+    {
+        searchIcon.setOnClickListener ( new View.OnClickListener ()
+        {
+            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+            @Override
+            public void onClick(View v)
+            {
+                if(searchField.getVisibility () == View.GONE)
+                {
+                    searchField.setVisibility ( View.VISIBLE );
+                    closeIcon.setVisibility ( View.VISIBLE );
+                }else
+                    {
+                        String word = searchField.getText ().toString ();
+
+                        if(!word.isEmpty ())
+                        {
+                            completeSearch ( word );
+                        }
+                    }
+            }
+        } );
+
+        closeIcon.setOnClickListener ( new View.OnClickListener ()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                closeIcon.setVisibility ( View.GONE );
+                searchField.setVisibility ( View.GONE );
+                searchField.setText ( "" );
+                new GetData ().execute ();
+            }
+        } );
+    }
+
+    private void completeSearch(String word)
+    {
+        new getSearchData ().execute ( word );
+    }
+
+    class getSearchData extends AsyncTask<String,Void,List<NoteModel>>
+    {
+
+        @Override
+        protected List<NoteModel> doInBackground(String... strings)
+        {
+            searchModels = db.Dao ().search ( strings[0] );
+            return searchModels;
+        }
+
+        @Override
+        protected void onPostExecute(List<NoteModel> noteModels) {
+            super.onPostExecute ( noteModels );
+            RecyclerNotes recyclerNotes=new RecyclerNotes(noteModels);
+            recyclerView.setAdapter(recyclerNotes);
+        }
+    }
+
+    private void onEditClick(final NoteModel noteModel)
     {
         closeButton.setOnClickListener ( new View.OnClickListener ()
         {
@@ -78,6 +147,7 @@ public class HomeFragment extends Fragment {
             public void onClick(View v)
             {
                 editLinear.setVisibility ( View.GONE );
+                searchLinear.setVisibility ( View.VISIBLE );
             }
         } );
 
@@ -89,6 +159,7 @@ public class HomeFragment extends Fragment {
                 new Delete ().execute ( noteModel );
                 new GetData ().execute ();
                 editLinear.setVisibility ( View.GONE );
+                searchLinear.setVisibility ( View.VISIBLE );
             }
         } );
 
@@ -108,7 +179,10 @@ public class HomeFragment extends Fragment {
         pinButton=view.findViewById ( R.id.pin );
         closeButton=view.findViewById ( R.id.close );
         editLinear=view.findViewById ( R.id.edit_lin );
-        editLinear.setVisibility ( View.GONE );
+        searchLinear=view.findViewById ( R.id.search_bar );
+        searchField=view.findViewById ( R.id.search_field );
+        searchIcon=view.findViewById ( R.id.search_icon );
+        closeIcon=view.findViewById ( R.id.close_search );
     }
 
     private void InitData() {
@@ -177,7 +251,8 @@ public class HomeFragment extends Fragment {
                 public boolean onLongClick(View v)
                 {
                     editLinear.setVisibility ( View.VISIBLE );
-                    onClick (noteModel);
+                    searchLinear.setVisibility ( View.GONE );
+                    onEditClick (noteModel);
                     return false;
                 }
             } );

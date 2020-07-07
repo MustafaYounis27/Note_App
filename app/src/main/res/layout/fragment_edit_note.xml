@@ -14,7 +14,17 @@
         app:menu="@menu/edit_note_menu"
         app:navigationIcon="?attr/homeAsUpIndicator"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        app:titleTextColor="#fff" />
+        app:titleTextColor="#fff">
+
+        <TextView
+            android:id="@+id/note_id"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textColor="@android:color/black"
+            android:textSize="20sp"
+            />
+
+    </androidx.appcompat.widget.Toolbar>
 
     <EditText
         android:id="@+id/TitleField"

@@ -18,7 +18,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,11 +39,10 @@ import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
-import com.squareup.picasso.Picasso;
 import com.youssef.noteapp.R;
 import com.youssef.noteapp.data.local.AppDataBase;
 import com.youssef.noteapp.models.NoteModel;
-import com.youssef.noteapp.ui.WirteNewNote.WriteNewNoteActivity;
+import com.youssef.noteapp.ui.Login.LoginActivity;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -71,15 +69,18 @@ public class EditNoteFragment extends Fragment
     private Uri image_uri;
     private List<Uri> ImagesUri = new ArrayList<> ();
     public static String SaveImagesString;
-    private ProgressDialog dialog;
     private NoteModel noteModel;
     private AppDataBase db;
+
+    public EditNoteFragment(NoteModel noteModel)
+    {
+        this.noteModel=noteModel;
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         editNoteFragment = inflater.inflate ( R.layout.fragment_edit_note , null );
-        noteModel = (NoteModel) getArguments ().getSerializable ( "noteModel" );
         return editNoteFragment;
     }
 
@@ -91,17 +92,9 @@ public class EditNoteFragment extends Fragment
         InitViews();
         InitClors();
         InitBackGroundClors();
-        InitDialog();
         InitData ();
         OnItemCLick();
         OnBack ();
-    }
-
-    private void InitDialog() {
-        dialog = new ProgressDialog (getContext ());
-        dialog.setTitle("load");
-        dialog.setMessage("please waite...");
-        dialog.setCancelable(false);
     }
 
     private void InitData() {
@@ -181,18 +174,27 @@ public class EditNoteFragment extends Fragment
 
     private void shareNote()
     {
-        FragmentManager fragmentManager = requireActivity ().getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        Fragment fragment=new LoginFragment ();
-        fragmentTransaction.replace(R.id.Frame, fragment);
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
+        if(noteModel.getNote_id () == null) 
+        {
+            Intent share = new Intent ( getContext (), LoginActivity.class );
+            share.putExtra ( "noteModel", noteModel );
+            startActivity ( share );
+            requireActivity ().finish ();
+        }else
+            {
+                Toast.makeText ( getContext (), "note is already uploaded before", Toast.LENGTH_SHORT ).show ();
+            }
     }
 
     private void InitViews() {
         FloatingActionButton floatingActionButton = getActivity ().findViewById ( R.id.floatingActionButton );
         floatingActionButton.setVisibility ( View.GONE );
 
+        TextView noteIdField = editNoteFragment.findViewById ( R.id.note_id );
+        if(noteModel.getNote_id () != null)
+        {
+            noteIdField.setText ( noteModel.getNote_id () );
+        }
         TitleField = editNoteFragment.findViewById(R.id.TitleField);
         TitleField.setText ( noteModel.getTitle () );
         SubjectField = editNoteFragment.findViewById(R.id.SubjectField);

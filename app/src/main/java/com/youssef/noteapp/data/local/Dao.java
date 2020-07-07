@@ -21,6 +21,6 @@ public interface Dao {
     void Delete(NoteModel noteModel);
     @Update
     void UpdateNote(NoteModel noteModels);
-    @Query ( "SELECT * FROM notes_table WHERE Title = :searchWord" )
+    @Query ( "SELECT * FROM notes_table WHERE Title LIKE '%' || :searchWord || '%'" )
     List<NoteModel> search(String searchWord);
 }

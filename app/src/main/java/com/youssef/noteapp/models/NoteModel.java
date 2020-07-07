@@ -21,8 +21,8 @@ public class NoteModel implements Serializable {
     String Title;
     @ColumnInfo(name = "Subject")
     String Subject;
-    @Embedded
-    public String ImageUrl;
+    @ColumnInfo
+    String ImageUrl;
     @ColumnInfo(name = "VoiceUrl")
     String VoiceUrl;
     @ColumnInfo(name = "Date")
@@ -31,6 +31,8 @@ public class NoteModel implements Serializable {
     String text_color;
     @ColumnInfo(name = "background_color")
     String background_color;
+    @ColumnInfo(name = "note_id")
+    String note_id;
 
     public NoteModel(String Title, String Subject, String ImageUrl, String VoiceUrl, String Date, String text_color, String background_color) {
         this.Title = Title;
@@ -40,6 +42,11 @@ public class NoteModel implements Serializable {
         this.Date = Date;
         this.text_color = text_color;
         this.background_color = background_color;
+    }
+
+    public NoteModel()
+    {
+
     }
 
     public String getText_color() {
@@ -106,4 +113,11 @@ public class NoteModel implements Serializable {
         VoiceUrl = voiceUrl;
     }
 
+    public String getNote_id(){
+        return note_id;
+    }
+
+    public void setNote_id(String note_id){
+        this.note_id = note_id;
+    }
 }

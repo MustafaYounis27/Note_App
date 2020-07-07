@@ -1,26 +1,19 @@
 package com.youssef.noteapp.ui.fragments;
 
-import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.pm.PackageManager;
+import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.room.Query;
 import androidx.room.Room;
 
 import android.view.LayoutInflater;
@@ -31,14 +24,14 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.itextpdf.text.Document;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.youssef.noteapp.R;
 import com.youssef.noteapp.data.local.AppDataBase;
 import com.youssef.noteapp.models.NoteModel;
-import com.youssef.noteapp.ui.WirteNewNote.WriteNewNoteActivity;
 
 import java.util.List;
 
@@ -48,12 +41,13 @@ public class HomeFragment extends Fragment {
     private RecyclerView recyclerView;
     private Button deleteButton, pinButton, closeButton;
     private LinearLayout editLinear, searchLinear;
-    EditText searchField;
-    ImageView searchIcon, closeIcon;
+    private EditText searchField;
+    private ImageView searchIcon, closeIcon;
     private AppDataBase db;
-    private ProgressDialog dialog;
-    List<NoteModel> noteModels;
-    List<NoteModel> searchModels;
+    private FirebaseAuth auth;
+    private String uid;
+    private DatabaseReference databaseReference;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,15 +62,51 @@ public class HomeFragment extends Fragment {
     }
 
     @Override
-    public void onStart() {
+    public void onStart()
+    {
         super.onStart ();
+
+        InitData();
+        initFirebase();
+        Intent i = requireActivity ().getIntent ();
+        if( i != null)
+        {
+            NoteModel noteModel = (NoteModel) i.getSerializableExtra ( "noteModel" );
+            String noteId = i.getStringExtra ( "noteId" );
+            if( noteModel != null && noteId != null)
+            {
+                if(noteModel.getNote_id () == null)
+                {
+                    noteModel.setNote_id ( noteId );
+                    new updateNote ().execute ( noteModel );
+                    openEditNote ( noteModel );
+                }
+            }
+        }
+
         FloatingActionButton floatingActionButton = requireActivity ().findViewById ( R.id.floatingActionButton );
         floatingActionButton.setVisibility ( View.VISIBLE );
         InitViews();
         InitRecycler();
-        InitData();
         new GetData().execute();
         onSearchClick();
+    }
+
+    class updateNote extends AsyncTask<NoteModel,Void,Void>
+    {
+        @Override
+        protected Void doInBackground(NoteModel... noteModels)
+        {
+            db.Dao ().UpdateNote ( noteModels[0] );
+            return null;
+        }
+    }
+
+    private void initFirebase()
+    {
+        auth=FirebaseAuth.getInstance ();
+        uid = auth.getUid ();
+        databaseReference= FirebaseDatabase.getInstance ().getReference ();
     }
 
     private void onSearchClick()
@@ -90,6 +120,7 @@ public class HomeFragment extends Fragment {
                 if(searchField.getVisibility () == View.GONE)
                 {
                     searchField.setVisibility ( View.VISIBLE );
+                    searchField.requestFocus ();
                     closeIcon.setVisibility ( View.VISIBLE );
                 }else
                     {
@@ -127,8 +158,7 @@ public class HomeFragment extends Fragment {
         @Override
         protected List<NoteModel> doInBackground(String... strings)
         {
-            searchModels = db.Dao ().search ( strings[0] );
-            return searchModels;
+            return db.Dao ().search ( strings[ 0 ] );
         }
 
         @Override
@@ -201,8 +231,7 @@ public class HomeFragment extends Fragment {
 
         @Override
         protected List<NoteModel> doInBackground(Void... voids) {
-            noteModels=db.Dao().GetAllNotes();
-            return noteModels;
+            return db.Dao ().GetAllNotes ();
         }
 
         @Override
@@ -218,6 +247,8 @@ public class HomeFragment extends Fragment {
         @Override
         protected Void doInBackground(NoteModel... noteModels) {
             db.Dao ().Delete (noteModels[0]);
+            if(noteModels[0].getNote_id () != null)
+                databaseReference.child ( "notes" ).child ( uid ).child ( noteModels[0].getNote_id () ).removeValue ();
             return null;
         }
     }
@@ -287,10 +318,7 @@ public class HomeFragment extends Fragment {
 
     private void openEditNote(NoteModel noteModel)
     {
-        Bundle bundle = new Bundle (  );
-        bundle.putSerializable ( "noteModel", noteModel );
-        EditNoteFragment editNoteFragment = new EditNoteFragment ();
-        editNoteFragment.setArguments ( bundle );
+        EditNoteFragment editNoteFragment = new EditNoteFragment (noteModel);
         FragmentManager fragmentManager = requireActivity ().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.Frame, editNoteFragment );

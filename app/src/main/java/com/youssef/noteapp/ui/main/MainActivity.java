@@ -13,16 +13,28 @@ import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.youssef.noteapp.R;
+import com.youssef.noteapp.models.NoteModel;
 import com.youssef.noteapp.ui.WirteNewNote.WriteNewNoteActivity;
+import com.youssef.noteapp.ui.fragments.EditNoteFragment;
 import com.youssef.noteapp.ui.fragments.HomeFragment;
 
 import java.io.File;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+{
     FloatingActionButton floatingActionButton;
 
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onStart()
+    {
+        super.onStart ();
+
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         CreateFolderInStorage();
@@ -62,5 +74,4 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.replace(R.id.Frame, fragment);
         fragmentTransaction.commit();
     }
-
 }

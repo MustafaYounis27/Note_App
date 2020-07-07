@@ -187,11 +187,16 @@ public class LoginFragment extends Fragment
 
     private void uploadNote(String uid)
     {
-        dialog.show ();
-        final String noteId = databaseReference.child ( "notes" ).child ( uid ).push ().getKey ();
+        final String noteId;
+
+        if(noteModel.getNote_id () != null)
+            noteId = noteModel.getNote_id ();
+        else
+            noteId = databaseReference.child ( "notes" ).child ( uid ).push ().getKey ();
 
         if(noteId != null)
         {
+            dialog.show ();
             databaseReference.child ( "notes" ).child ( uid ).child ( noteId ).setValue ( noteModel ).addOnCompleteListener ( new OnCompleteListener<Void> ()
             {
                 @Override

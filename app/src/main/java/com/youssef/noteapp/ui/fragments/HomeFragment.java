@@ -1,6 +1,5 @@
 package com.youssef.noteapp.ui.fragments;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -218,6 +217,7 @@ public class HomeFragment extends Fragment {
     private void InitData() {
         db= Room.databaseBuilder(context, AppDataBase.class,"db").build();
     }
+
     private void InitRecycler() {
         recyclerView=view.findViewById(R.id.RecyclerView);
     }

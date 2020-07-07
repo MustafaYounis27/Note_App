@@ -174,8 +174,14 @@ public class EditNoteFragment extends Fragment
 
     private void shareNote()
     {
-        if(noteModel.getNote_id () == null) 
+        String title = TitleField.getText().toString();
+        String subject = SubjectField.getText().toString();
+
+        if(noteModel.getNote_id () == null || !noteModel.getTitle ().equals ( title ) || !noteModel.getSubject ().equals ( subject ))
         {
+            noteModel.setTitle ( title );
+            noteModel.setSubject ( subject );
+            new updateNote ().execute ( noteModel );
             Intent share = new Intent ( getContext (), LoginActivity.class );
             share.putExtra ( "noteModel", noteModel );
             startActivity ( share );

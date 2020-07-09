@@ -2,7 +2,6 @@ package com.youssef.noteapp.ui.fragments;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -33,6 +32,9 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.room.Room;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Paragraph;
@@ -70,7 +72,10 @@ public class EditNoteFragment extends Fragment
     private List<Uri> ImagesUri = new ArrayList<> ();
     public static String SaveImagesString;
     private NoteModel noteModel;
+    private String noteId;
     private AppDataBase db;
+    private FirebaseAuth auth;
+    private DatabaseReference databaseReference;
 
     public EditNoteFragment(NoteModel noteModel)
     {
@@ -90,11 +95,18 @@ public class EditNoteFragment extends Fragment
         super.onActivityCreated ( savedInstanceState );
 
         InitViews();
+        initFirebase ();
         InitClors();
         InitBackGroundClors();
         InitData ();
         OnItemCLick();
         OnBack ();
+    }
+
+    private void initFirebase()
+    {
+        auth= FirebaseAuth.getInstance ();
+        databaseReference= FirebaseDatabase.getInstance ().getReference ();
     }
 
     private void InitData() {
@@ -177,19 +189,13 @@ public class EditNoteFragment extends Fragment
         String title = TitleField.getText().toString();
         String subject = SubjectField.getText().toString();
 
-        if(noteModel.getNote_id () == null || !noteModel.getTitle ().equals ( title ) || !noteModel.getSubject ().equals ( subject ))
-        {
-            noteModel.setTitle ( title );
-            noteModel.setSubject ( subject );
-            new updateNote ().execute ( noteModel );
-            Intent share = new Intent ( getContext (), LoginActivity.class );
-            share.putExtra ( "noteModel", noteModel );
-            startActivity ( share );
-            requireActivity ().finish ();
-        }else
-            {
-                Toast.makeText ( getContext (), "note is already uploaded before", Toast.LENGTH_SHORT ).show ();
-            }
+        noteModel.setTitle ( title );
+        noteModel.setSubject ( subject );
+        new updateNote ().execute ( noteModel );
+        Intent share = new Intent ( getContext (), LoginActivity.class );
+        share.putExtra ( "noteModel", noteModel );
+        startActivity ( share );
+        requireActivity ().finish ();
     }
 
     private void InitViews() {
@@ -199,6 +205,7 @@ public class EditNoteFragment extends Fragment
         TextView noteIdField = editNoteFragment.findViewById ( R.id.note_id );
         if(noteModel.getNote_id () != null)
         {
+            noteId = noteModel.getNote_id ();
             noteIdField.setText ( noteModel.getNote_id () );
         }
         TitleField = editNoteFragment.findViewById(R.id.TitleField);

@@ -23,6 +23,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
@@ -31,14 +32,15 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.youssef.noteapp.R;
 import com.youssef.noteapp.data.local.AppDataBase;
 import com.youssef.noteapp.models.NoteModel;
+import com.youssef.noteapp.ui.Login.LoginActivity;
 
 import java.util.List;
 
 public class HomeFragment extends Fragment {
     private Context context;
-    private View view;
+    private View view, viewInSearch;
     private RecyclerView recyclerView;
-    private Button deleteButton, pinButton, closeButton;
+    private Button deleteButton, pinButton, closeButton, joinButton;
     private LinearLayout editLinear, searchLinear;
     private EditText searchField;
     private ImageView searchIcon, closeIcon;
@@ -76,6 +78,7 @@ public class HomeFragment extends Fragment {
             {
                 if(noteModel.getNote_id () == null)
                 {
+                    Toast.makeText ( context, "noteId", Toast.LENGTH_SHORT ).show ();
                     noteModel.setNote_id ( noteId );
                     new updateNote ().execute ( noteModel );
                     openEditNote ( noteModel );
@@ -121,6 +124,8 @@ public class HomeFragment extends Fragment {
                     searchField.setVisibility ( View.VISIBLE );
                     searchField.requestFocus ();
                     closeIcon.setVisibility ( View.VISIBLE );
+                    joinButton.setVisibility ( View.GONE );
+                    viewInSearch.setVisibility ( View.GONE );
                 }else
                     {
                         String word = searchField.getText ().toString ();
@@ -140,15 +145,74 @@ public class HomeFragment extends Fragment {
             {
                 closeIcon.setVisibility ( View.GONE );
                 searchField.setVisibility ( View.GONE );
+                joinButton.setVisibility ( View.VISIBLE );
+                viewInSearch.setVisibility ( View.VISIBLE );
+                searchIcon.setVisibility ( View.VISIBLE );
                 searchField.setText ( "" );
                 new GetData ().execute ();
             }
         } );
+
+        joinButton.setOnClickListener ( new View.OnClickListener ()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                if(searchField.getVisibility () == View.GONE)
+                {
+                    searchField.setVisibility ( View.VISIBLE );
+                    closeIcon.setVisibility ( View.VISIBLE );
+                    searchField.setHint ( "enter note id" );
+                    searchField.requestFocus ();
+                    viewInSearch.setVisibility ( View.GONE );
+                    searchIcon.setVisibility ( View.GONE );
+                }else
+                    {
+                    String noteId = searchField.getText ().toString ();
+
+                    exportNoteFromFirebase ( noteId );
+                }
+            }
+        } );
+    }
+
+    private void exportNoteFromFirebase(String noteId)
+    {
+        new checkNoteFound ().execute ( noteId );
     }
 
     private void completeSearch(String word)
     {
         new getSearchData ().execute ( word );
+    }
+
+    class checkNoteFound extends AsyncTask<String,Void,NoteModel>
+    {
+        String noteId;
+        @Override
+        protected NoteModel doInBackground(String... strings)
+        {
+            noteId=strings[0];
+            return db.Dao ().checkNoteFound ( strings[ 0 ] );
+        }
+
+        @Override
+        protected void onPostExecute(NoteModel noteModels)
+        {
+            super.onPostExecute ( noteModels );
+
+            if(noteModels != null)
+            {
+                Toast.makeText ( context, "note is already found", Toast.LENGTH_SHORT ).show ();
+                new getSearchData ().execute ( noteModels.getTitle () );
+            }else
+                {
+                    Intent intent = new Intent ( getContext (), LoginActivity.class );
+                    intent.putExtra ( "noteId", noteId );
+                    startActivity ( intent );
+                    requireActivity ().finish ();
+                }
+        }
     }
 
     class getSearchData extends AsyncTask<String,Void,List<NoteModel>>
@@ -212,6 +276,8 @@ public class HomeFragment extends Fragment {
         searchField=view.findViewById ( R.id.search_field );
         searchIcon=view.findViewById ( R.id.search_icon );
         closeIcon=view.findViewById ( R.id.close_search );
+        joinButton=view.findViewById ( R.id.join );
+        viewInSearch=view.findViewById ( R.id.view_in_search );
     }
 
     private void InitData() {
@@ -248,7 +314,7 @@ public class HomeFragment extends Fragment {
         protected Void doInBackground(NoteModel... noteModels) {
             db.Dao ().Delete (noteModels[0]);
             if(noteModels[0].getNote_id () != null)
-                databaseReference.child ( "notes" ).child ( uid ).child ( noteModels[0].getNote_id () ).removeValue ();
+                databaseReference.child ( "notes" ).child ( noteModels[0].getNote_id () ).removeValue ();
             return null;
         }
     }
@@ -276,6 +342,13 @@ public class HomeFragment extends Fragment {
             if(!noteModel.getBackground_color().equals("#fff")){
                 holder.background.setBackgroundColor (Color.parseColor(noteModel.getBackground_color()));
             }
+            holder.editNote.setOnClickListener ( new View.OnClickListener () {
+                @Override
+                public void onClick(View v) {
+                    openEditNote(noteModel);
+                }
+            } );
+
             holder.editNote.setOnLongClickListener ( new View.OnLongClickListener ()
             {
                 @Override
@@ -285,12 +358,6 @@ public class HomeFragment extends Fragment {
                     searchLinear.setVisibility ( View.GONE );
                     onEditClick (noteModel);
                     return false;
-                }
-            } );
-            holder.editNote.setOnClickListener ( new View.OnClickListener () {
-                @Override
-                public void onClick(View v) {
-                    openEditNote(noteModel);
                 }
             } );
         }

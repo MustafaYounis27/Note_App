@@ -45,11 +45,18 @@ public class LoginFragment extends Fragment
     private FirebaseAuth auth;
     private DatabaseReference databaseReference;
     private NoteModel noteModel;
+    private String noteId;
     private ProgressDialog dialog;
+    private AppDataBase db;
 
     public LoginFragment(NoteModel noteModel)
     {
         this.noteModel=noteModel;
+    }
+
+    public LoginFragment(String noteId)
+    {
+        this.noteId=noteId;
     }
 
     @Nullable
@@ -70,12 +77,53 @@ public class LoginFragment extends Fragment
         FirebaseUser user = auth.getCurrentUser ();
         if(user != null)
         {
-            uploadNote ( user.getUid () );
+            if(noteModel != null)
+                uploadNote ( user.getUid () );
+            else
+                exportNote(noteId);
         }else
             {
                 Toast.makeText ( getContext (), "please login or sign up", Toast.LENGTH_SHORT ).show ();
             }
 
+    }
+
+    private void exportNote(final String noteId)
+    {
+        databaseReference.child ( "notes" ).child ( noteId ).addValueEventListener ( new ValueEventListener ()
+        {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot)
+            {
+                noteModel = snapshot.getValue (NoteModel.class);
+                new Insert ().execute ( noteModel );
+                Intent intent = new Intent ( getContext (), MainActivity.class );
+                intent.putExtra ( "noteModel",noteModel );
+                intent.putExtra ( "noteId",noteId );
+                requireActivity ().startActivity ( intent );
+                requireActivity ().finish ();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error)
+            {
+                Toast.makeText ( getContext (), error.getMessage (), Toast.LENGTH_SHORT ).show ();
+            }
+        } );
+    }
+
+    class Insert extends AsyncTask<NoteModel, Void, Void>
+    {
+        @Override
+        protected Void doInBackground(NoteModel... noteModels)
+        {
+            db.Dao().Insert(noteModels);
+            return null;
+        }
+    }
+
+    private void initData() {
+        db = Room.databaseBuilder(getContext (), AppDataBase.class, "db").build();
     }
 
     private void initDialog()
@@ -91,6 +139,7 @@ public class LoginFragment extends Fragment
     {
         super.onActivityCreated ( savedInstanceState );
 
+        initData();
         initFirebase();
         initViews();
         onClick();
@@ -121,11 +170,21 @@ public class LoginFragment extends Fragment
             @Override
             public void onClick(View v)
             {
-                FragmentManager fragmentManager = requireActivity ().getSupportFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                Fragment fragment=new registerFragment (noteModel);
-                fragmentTransaction.replace(R.id.frame_login, fragment);
-                fragmentTransaction.commit();
+                if(noteModel != null)
+                {
+                    FragmentManager fragmentManager = requireActivity ().getSupportFragmentManager();
+                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                    Fragment fragment=new registerFragment (noteModel);
+                    fragmentTransaction.replace(R.id.frame_login, fragment);
+                    fragmentTransaction.commit();
+                }else
+                    {
+                        FragmentManager fragmentManager = requireActivity ().getSupportFragmentManager();
+                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                        Fragment fragment=new registerFragment (noteId);
+                        fragmentTransaction.replace(R.id.frame_login, fragment);
+                        fragmentTransaction.commit();
+                    }
             }
         } );
 
@@ -175,7 +234,11 @@ public class LoginFragment extends Fragment
                 if(task.isSuccessful () && task.getResult ()!=null)
                 {
                     String uid = task.getResult ().getUser ().getUid ();
-                    uploadNote ( uid );
+
+                    if(noteModel != null)
+                        uploadNote ( uid );
+                    else
+                        exportNote(noteId);
                 }
                 else
                     {
@@ -185,7 +248,7 @@ public class LoginFragment extends Fragment
         } );
     }
 
-    private void uploadNote(String uid)
+    private void uploadNote(final String uid)
     {
         final String noteId;
 
@@ -197,13 +260,15 @@ public class LoginFragment extends Fragment
         if(noteId != null)
         {
             dialog.show ();
-            databaseReference.child ( "notes" ).child ( uid ).child ( noteId ).setValue ( noteModel ).addOnCompleteListener ( new OnCompleteListener<Void> ()
+            databaseReference.child ( "notes" ).child ( noteId ).setValue ( noteModel ).addOnCompleteListener ( new OnCompleteListener<Void> ()
             {
                 @Override
                 public void onComplete(@NonNull Task<Void> task)
                 {
                     if(task.isSuccessful ())
                     {
+                        databaseReference.child ( "notes" ).child ( noteId ).child ( "id" ).removeValue ();
+                        databaseReference.child ( "notes" ).child ( noteId ).child ( "note_id" ).setValue ( noteId );
                         Intent intent = new Intent ( requireActivity (), MainActivity.class );
                         intent.putExtra ( "noteModel",noteModel );
                         intent.putExtra ( "noteId",noteId );

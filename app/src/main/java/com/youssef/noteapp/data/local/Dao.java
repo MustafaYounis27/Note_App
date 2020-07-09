@@ -23,4 +23,6 @@ public interface Dao {
     void UpdateNote(NoteModel noteModels);
     @Query ( "SELECT * FROM notes_table WHERE Title LIKE '%' || :searchWord || '%'" )
     List<NoteModel> search(String searchWord);
+    @Query ( "SELECT * FROM notes_table WHERE note_id = :searchWord")
+    NoteModel checkNoteFound(String searchWord);
 }

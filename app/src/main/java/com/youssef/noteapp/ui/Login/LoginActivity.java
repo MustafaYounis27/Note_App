@@ -16,6 +16,7 @@ import com.youssef.noteapp.ui.main.MainActivity;
 public class LoginActivity extends AppCompatActivity
 {
     NoteModel noteModel;
+    String noteId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -23,11 +24,16 @@ public class LoginActivity extends AppCompatActivity
         super.onCreate ( savedInstanceState );
         setContentView ( R.layout.activity_login );
 
+        noteId = getIntent ().getStringExtra ( "noteId" );
         noteModel = (NoteModel) getIntent ().getSerializableExtra ( "noteModel" );
-        replaceFragment ( new LoginFragment (noteModel) );
+        if(noteModel != null)
+            replaceFragment ( new LoginFragment (noteModel) );
+        else
+            replaceFragment ( new LoginFragment (noteId) );
     }
 
-    void replaceFragment(Fragment fragment) {
+    void replaceFragment(Fragment fragment)
+    {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.frame_login, fragment);
@@ -35,12 +41,21 @@ public class LoginActivity extends AppCompatActivity
     }
 
     @Override
-    public void onBackPressed() {
+    public void onBackPressed()
+    {
         super.onBackPressed ();
 
-        Intent intent = new Intent ( getApplicationContext (), MainActivity.class );
-        intent.putExtra ( "noteModel",noteModel );
-        startActivity ( intent );
-        finish ();
+        if(noteModel != null)
+        {
+            Intent intent = new Intent ( getApplicationContext (), MainActivity.class );
+            intent.putExtra ( "noteModel",noteModel );
+            startActivity ( intent );
+            finish ();
+        }else
+            {
+                Intent intent = new Intent ( getApplicationContext (), MainActivity.class );
+                startActivity ( intent );
+                finish ();
+            }
     }
 }

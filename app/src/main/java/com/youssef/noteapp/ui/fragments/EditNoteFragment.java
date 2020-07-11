@@ -12,10 +12,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -60,6 +63,7 @@ import java.util.Locale;
 
 public class EditNoteFragment extends Fragment
 {
+    private FloatingActionButton undoButton;
     private View editNoteFragment;
     private EditText TitleField, SubjectField;
     private Toolbar toolbar;
@@ -72,10 +76,7 @@ public class EditNoteFragment extends Fragment
     private List<Uri> ImagesUri = new ArrayList<> ();
     public static String SaveImagesString;
     private NoteModel noteModel;
-    private String noteId;
     private AppDataBase db;
-    private FirebaseAuth auth;
-    private DatabaseReference databaseReference;
 
     public EditNoteFragment(NoteModel noteModel)
     {
@@ -95,18 +96,71 @@ public class EditNoteFragment extends Fragment
         super.onActivityCreated ( savedInstanceState );
 
         InitViews();
-        initFirebase ();
         InitClors();
         InitBackGroundClors();
         InitData ();
         OnItemCLick();
         OnBack ();
+        backgroun_color=noteModel.getBackground_color ();
+        text_color=noteModel.getText_color ();
+        setTextColor(text_color);
+        setBackgroundColor(backgroun_color);
     }
 
-    private void initFirebase()
+    private void setBackgroundColor(String backgroun_color)
     {
-        auth= FirebaseAuth.getInstance ();
-        databaseReference= FirebaseDatabase.getInstance ().getReference ();
+        switch (backgroun_color)
+        {
+            case "#000000":
+                SubjectField.setBackgroundColor (requireActivity ().getResources().getColor(R.color.black));
+                break;
+            case "#696969":
+                SubjectField.setBackgroundColor (requireActivity ().getResources().getColor(R.color.gray));
+                break;
+            case "#FA0505":
+                SubjectField.setBackgroundColor (requireActivity ().getResources().getColor(R.color.read));
+                break;
+            case "#3F51B5":
+                SubjectField.setBackgroundColor (requireActivity ().getResources().getColor(R.color.blue));
+                break;
+            case "#4CAF50":
+                SubjectField.setBackgroundColor (requireActivity ().getResources().getColor(R.color.green));
+                break;
+            case "#CDDC39":
+                SubjectField.setBackgroundColor (requireActivity ().getResources().getColor(R.color.green2));
+                break;
+            case "#009688":
+                SubjectField.setBackgroundColor (requireActivity ().getResources().getColor(R.color.trqwaz));
+                break;
+        }
+    }
+
+    private void setTextColor(String text_color)
+    {
+        switch (text_color)
+        {
+            case "#000000":
+                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.black));
+                break;
+            case "#696969":
+                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.gray));
+                break;
+            case "#FA0505":
+                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.read));
+                break;
+            case "#3F51B5":
+                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.blue));
+                break;
+            case "#4CAF50":
+                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.green));
+                break;
+            case "#CDDC39":
+                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.green2));
+                break;
+            case "#009688":
+                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.trqwaz));
+                break;
+        }
     }
 
     private void InitData() {
@@ -147,14 +201,14 @@ public class EditNoteFragment extends Fragment
             public void onClick(View v) {
                 String title = TitleField.getText().toString();
                 String subject = SubjectField.getText().toString();
-                if (!title.isEmpty() && !subject.isEmpty() && !title.equals ( noteModel.getTitle ()) || !subject.equals ( noteModel.getSubject ()) ) {
+                if (!title.isEmpty() && !subject.isEmpty() && !title.equals ( noteModel.getTitle ()) || !subject.equals ( noteModel.getSubject ()) || !backgroun_color.equals ( noteModel.getBackground_color () ) ) {
                     SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM hh:mm aa", Locale.getDefault());
                     String currentDateandTime = sdf.format(new Date());
                     if (text_color == null) {
-                        text_color = "#000";
+                        text_color = "#000000";
                     }
                     if (backgroun_color == null) {
-                        backgroun_color = "#fff";
+                        backgroun_color = "#ffffff";
                     }
                     noteModel.setSubject ( subject );
                     noteModel.setTitle ( title );
@@ -189,9 +243,20 @@ public class EditNoteFragment extends Fragment
         String title = TitleField.getText().toString();
         String subject = SubjectField.getText().toString();
 
-        noteModel.setTitle ( title );
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM hh:mm aa", Locale.getDefault());
+        String currentDateandTime = sdf.format(new Date());
+        if (text_color == null) {
+            text_color = "#000";
+        }
+        if (backgroun_color == null) {
+            backgroun_color = "#fff";
+        }
         noteModel.setSubject ( subject );
-        new updateNote ().execute ( noteModel );
+        noteModel.setTitle ( title );
+        noteModel.setDate ( currentDateandTime );
+        noteModel.setBackground_color ( backgroun_color );
+        noteModel.setText_color ( text_color );
+        new updateNote ().execute( noteModel );
         Intent share = new Intent ( getContext (), LoginActivity.class );
         share.putExtra ( "noteModel", noteModel );
         startActivity ( share );
@@ -199,13 +264,22 @@ public class EditNoteFragment extends Fragment
     }
 
     private void InitViews() {
-        FloatingActionButton floatingActionButton = getActivity ().findViewById ( R.id.floatingActionButton );
+        FloatingActionButton floatingActionButton = requireActivity ().findViewById ( R.id.floatingActionButton );
         floatingActionButton.setVisibility ( View.GONE );
+
+        undoButton=editNoteFragment.findViewById ( R.id.undo );
+        undoButton.setOnClickListener ( new View.OnClickListener ()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                undoActions ();
+            }
+        } );
 
         TextView noteIdField = editNoteFragment.findViewById ( R.id.note_id );
         if(noteModel.getNote_id () != null)
         {
-            noteId = noteModel.getNote_id ();
             noteIdField.setText ( noteModel.getNote_id () );
         }
         TitleField = editNoteFragment.findViewById(R.id.TitleField);
@@ -229,6 +303,16 @@ public class EditNoteFragment extends Fragment
         });
     }
 
+    private void undoActions()
+    {
+        TitleField.setText ( noteModel.getTitle () );
+        SubjectField.setText ( noteModel.getSubject () );
+        text_color=noteModel.getText_color ();
+        backgroun_color=noteModel.getBackground_color ();
+        setBackgroundColor ( backgroun_color );
+        setTextColor ( text_color );
+    }
+
     private void InitClors() {
         black = editNoteFragment.findViewById(R.id.black);
         gray = editNoteFragment.findViewById(R.id.gray);
@@ -243,7 +327,7 @@ public class EditNoteFragment extends Fragment
             public void onClick(View view) {
                 SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.black));
                 linearLayout.setVisibility(View.GONE);
-                text_color = "#000";
+                text_color = "#000000";
             }
         });
 
@@ -315,7 +399,7 @@ public class EditNoteFragment extends Fragment
             public void onClick(View view) {
                 SubjectField.setBackgroundColor(requireActivity ().getResources().getColor(R.color.black));
                 BackGrounLinear.setVisibility(View.GONE);
-                backgroun_color = "#000";
+                backgroun_color = "#000000";
             }
         });
         backgray.setOnClickListener(new View.OnClickListener() {
@@ -358,7 +442,7 @@ public class EditNoteFragment extends Fragment
             public void onClick(View view) {
                 SubjectField.setBackgroundColor(requireActivity ().getResources().getColor(R.color.green2));
                 linearLayout.setVisibility(View.GONE);
-                text_color = "#CDDC39";
+                backgroun_color = "#CDDC39";
             }
         });
 

@@ -30,15 +30,35 @@
                 android:orientation="vertical"
                 android:padding="10dp"
                 >
-                <TextView
-                    android:text="ssssss"
-                    android:id="@+id/note_title"
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="20sp"
-                    android:textColor="#000"
-                    android:layout_marginHorizontal="5dp"
-                    android:layout_marginBottom="5dp"/>
+                    android:orientation="horizontal"
+                    >
+
+                    <TextView
+                        android:text="ssssss"
+                        android:id="@+id/note_title"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textSize="20sp"
+                        android:textColor="#000"
+                        android:layout_marginHorizontal="5dp"
+                        android:layout_marginBottom="5dp"
+                        />
+
+                    <ImageView
+                        android:id="@+id/online_state"
+                        android:layout_width="15dp"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/online"
+                        android:visibility="gone"
+                        />
+
+                </LinearLayout>
+
                 <TextView
                     android:text="cccccc"
                     android:id="@+id/note_subject"

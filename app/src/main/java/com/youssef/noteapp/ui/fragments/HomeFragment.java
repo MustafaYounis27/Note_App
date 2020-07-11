@@ -15,6 +15,8 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -76,6 +78,8 @@ public class HomeFragment extends Fragment {
             String noteId = i.getStringExtra ( "noteId" );
             if( noteModel != null && noteId != null)
             {
+                noteModel.setOnline_state ( 1 );
+                new updateNote ().execute ( noteModel );
                 if(noteModel.getNote_id () == null)
                 {
                     Toast.makeText ( context, "noteId", Toast.LENGTH_SHORT ).show ();
@@ -113,6 +117,24 @@ public class HomeFragment extends Fragment {
 
     private void onSearchClick()
     {
+        searchField.addTextChangedListener ( new TextWatcher () {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String word = s.toString ();
+                new getSearchData ().execute ( word );
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        } );
+
         searchIcon.setOnClickListener ( new View.OnClickListener ()
         {
             @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
@@ -126,15 +148,8 @@ public class HomeFragment extends Fragment {
                     closeIcon.setVisibility ( View.VISIBLE );
                     joinButton.setVisibility ( View.GONE );
                     viewInSearch.setVisibility ( View.GONE );
-                }else
-                    {
-                        String word = searchField.getText ().toString ();
-
-                        if(!word.isEmpty ())
-                        {
-                            completeSearch ( word );
-                        }
-                    }
+                    searchIcon.setVisibility ( View.GONE );
+                }
             }
         } );
 
@@ -339,6 +354,8 @@ public class HomeFragment extends Fragment {
             holder.Title.setText(noteModel.getTitle());
             holder.Subjec.setText(noteModel.getSubject());
             holder.Date.setText(noteModel.getDate());
+            if(noteModel.getOnline_state () == 1)
+                holder.onlineState.setVisibility ( View.VISIBLE );
             if(!noteModel.getBackground_color().equals("#fff")){
                 holder.background.setBackgroundColor (Color.parseColor(noteModel.getBackground_color()));
             }
@@ -372,6 +389,7 @@ public class HomeFragment extends Fragment {
             TextView Title,Subjec,Date;
             View background;
             LinearLayout editNote;
+            ImageView onlineState;
            public NotesViewHolder(@NonNull View itemView) {
                super(itemView);
                Title=itemView.findViewById(R.id.note_title);
@@ -379,6 +397,7 @@ public class HomeFragment extends Fragment {
                Date=itemView.findViewById(R.id.Date);
                background=itemView.findViewById(R.id.HomeBackGroundColor);
                editNote=itemView.findViewById ( R.id.edit_note );
+               onlineState=itemView.findViewById ( R.id.online_state );
            }
        }
     }

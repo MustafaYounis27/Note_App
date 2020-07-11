@@ -269,6 +269,7 @@ public class LoginFragment extends Fragment
                     {
                         databaseReference.child ( "notes" ).child ( noteId ).child ( "id" ).removeValue ();
                         databaseReference.child ( "notes" ).child ( noteId ).child ( "note_id" ).setValue ( noteId );
+                        databaseReference.child ( "notes" ).child ( noteId ).child ( "online_state" ).setValue ( 1 );
                         Intent intent = new Intent ( requireActivity (), MainActivity.class );
                         intent.putExtra ( "noteModel",noteModel );
                         intent.putExtra ( "noteId",noteId );

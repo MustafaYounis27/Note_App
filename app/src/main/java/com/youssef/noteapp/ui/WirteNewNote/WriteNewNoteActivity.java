@@ -53,7 +53,9 @@ import com.itextpdf.text.pdf.PdfWriter;
 import com.youssef.noteapp.R;
 import com.youssef.noteapp.data.local.AppDataBase;
 import com.youssef.noteapp.models.NoteModel;
+import com.youssef.noteapp.ui.Login.LoginActivity;
 import com.youssef.noteapp.ui.fragments.AttachmentFragment;
+import com.youssef.noteapp.ui.fragments.EditNoteFragment;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -179,6 +181,8 @@ public class WriteNewNoteActivity extends AppCompatActivity {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
+                    case R.id.share_note:
+                        shareNote ();
                     case R.id.NewNoteChangeTextColor:
                         linearLayout.setVisibility(View.VISIBLE);
                         break;
@@ -197,6 +201,30 @@ public class WriteNewNoteActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
+
+    private void shareNote()
+    {
+        String title = TitleField.getText().toString();
+        String subject = SubjectField.getText().toString();
+
+        if (!title.isEmpty() && !subject.isEmpty())
+        {
+            SimpleDateFormat sdf = new SimpleDateFormat ( "dd MMMM hh:mm aa", Locale.getDefault () );
+            String currentDateandTime = sdf.format ( new Date () );
+            if (text_color == null) {
+                text_color = "#000";
+            }
+            if (backgroun_color == null) {
+                backgroun_color = "#fff";
+            }
+            noteModel = new NoteModel ( title, subject, SaveImagesString, "", currentDateandTime, text_color, backgroun_color );
+            new Insert ().execute ( noteModel );
+        }
+        Intent share = new Intent ( getApplicationContext (), LoginActivity.class );
+        share.putExtra ( "noteModel", noteModel );
+        startActivity ( share );
+        finish ();
     }
 
     private void OnBack() {

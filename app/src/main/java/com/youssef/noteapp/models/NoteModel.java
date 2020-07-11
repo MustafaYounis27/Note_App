@@ -33,6 +33,8 @@ public class NoteModel implements Serializable {
     String background_color;
     @ColumnInfo(name = "note_id")
     String note_id;
+    @ColumnInfo(name = "online_state")
+    int online_state;
 
     public NoteModel(String Title, String Subject, String ImageUrl, String VoiceUrl, String Date, String text_color, String background_color) {
         this.Title = Title;
@@ -119,5 +121,13 @@ public class NoteModel implements Serializable {
 
     public void setNote_id(String note_id){
         this.note_id = note_id;
+    }
+
+    public int getOnline_state() {
+        return online_state;
+    }
+
+    public void setOnline_state(int online_state) {
+        this.online_state = online_state;
     }
 }

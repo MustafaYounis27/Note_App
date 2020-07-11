@@ -1,203 +1,220 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbarId"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#EF5D5D"
-        app:menu="@menu/edit_note_menu"
-        app:navigationIcon="?attr/homeAsUpIndicator"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        app:titleTextColor="#fff">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        >
 
-        <TextView
-            android:id="@+id/note_id"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:textColor="@android:color/black"
-            android:textSize="20sp"
-            />
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbarId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#EF5D5D"
+            app:menu="@menu/edit_note_menu"
+            app:navigationIcon="?attr/homeAsUpIndicator"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+            app:titleTextColor="#fff">
 
-    </androidx.appcompat.widget.Toolbar>
+            <TextView
+                android:id="@+id/note_id"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:textColor="@android:color/black"
+                android:textSize="20sp"
+                />
 
-    <EditText
-        android:id="@+id/TitleField"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="5dp"
-        android:layout_marginTop="5dp"
-        android:background="@drawable/strok_background"
-        android:hint=" title..."
-        android:padding="10dp"
-        android:textColor="#000"
-        android:textSize="20sp" />
-
-    <RelativeLayout
-        android:id="@+id/ree"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1">
+        </androidx.appcompat.widget.Toolbar>
 
         <EditText
-            android:id="@+id/SubjectField"
+            android:id="@+id/TitleField"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="5dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="5dp"
+            android:layout_marginTop="5dp"
             android:background="@drawable/strok_background"
-            android:gravity="top"
-            android:hint="Subject..."
+            android:hint=" title..."
             android:padding="10dp"
+            android:textColor="#000"
             android:textSize="20sp" />
 
-        <LinearLayout
-            android:id="@+id/LinearColor"
+        <RelativeLayout
+            android:id="@+id/ree"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_marginHorizontal="5dp"
-            android:layout_marginVertical="40dp"
-            android:gravity="center"
+            android:layout_weight="1">
+
+            <EditText
+                android:id="@+id/SubjectField"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="5dp"
+                android:background="@drawable/strok_background"
+                android:gravity="top"
+                android:hint="Subject..."
+                android:padding="10dp"
+                android:textSize="20sp" />
+
+            <LinearLayout
+                android:id="@+id/LinearColor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_marginHorizontal="5dp"
+                android:layout_marginVertical="40dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <View
+                    android:id="@+id/black"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/black_circle" />
+
+                <View
+                    android:id="@+id/gray"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/gray_circle" />
+
+                <View
+                    android:id="@+id/read"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/read_circle_shape" />
+
+                <View
+                    android:id="@+id/blue"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/blue_circle" />
+
+                <View
+                    android:id="@+id/green"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/green_circle" />
+
+                <View
+                    android:id="@+id/green2"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/green2_circle" />
+
+                <View
+                    android:id="@+id/trqwaz"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/trqwaz_circle" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/LinearBackgroundColor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_marginHorizontal="5dp"
+                android:layout_marginVertical="40dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <View
+                    android:id="@+id/backblack"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/black_circle" />
+
+                <View
+                    android:id="@+id/backgray"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/gray_circle" />
+
+                <View
+                    android:id="@+id/backread"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/read_circle_shape" />
+
+                <View
+                    android:id="@+id/backblue"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/blue_circle" />
+
+                <View
+                    android:id="@+id/backgreen"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/green_circle" />
+
+                <View
+                    android:id="@+id/backgreen2"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/green2_circle" />
+
+                <View
+                    android:id="@+id/backtrqwaz"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/trqwaz_circle" />
+
+            </LinearLayout>
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/Attachments"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
             android:orientation="horizontal"
             android:visibility="gone">
 
-            <View
-                android:id="@+id/black"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginRight="10dp"
-                android:background="@drawable/black_circle" />
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/v_attachment" />
 
-            <View
-                android:id="@+id/gray"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginRight="10dp"
-                android:background="@drawable/gray_circle" />
-
-            <View
-                android:id="@+id/read"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginRight="10dp"
-                android:background="@drawable/read_circle_shape" />
-
-            <View
-                android:id="@+id/blue"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginRight="10dp"
-                android:background="@drawable/blue_circle" />
-
-            <View
-                android:id="@+id/green"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginRight="10dp"
-                android:background="@drawable/green_circle" />
-
-            <View
-                android:id="@+id/green2"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginRight="10dp"
-                android:background="@drawable/green2_circle" />
-
-            <View
-                android:id="@+id/trqwaz"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@drawable/trqwaz_circle" />
-
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:text="Attachments"
+                android:textColor="#000"
+                android:textSize="18sp" />
         </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/LinearBackgroundColor"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_marginHorizontal="5dp"
-            android:layout_marginVertical="40dp"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:visibility="gone">
-
-            <View
-                android:id="@+id/backblack"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginRight="10dp"
-                android:background="@drawable/black_circle" />
-
-            <View
-                android:id="@+id/backgray"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginRight="10dp"
-                android:background="@drawable/gray_circle" />
-
-            <View
-                android:id="@+id/backread"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginRight="10dp"
-                android:background="@drawable/read_circle_shape" />
-
-            <View
-                android:id="@+id/backblue"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginRight="10dp"
-                android:background="@drawable/blue_circle" />
-
-            <View
-                android:id="@+id/backgreen"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginRight="10dp"
-                android:background="@drawable/green_circle" />
-
-            <View
-                android:id="@+id/backgreen2"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginRight="10dp"
-                android:background="@drawable/green2_circle" />
-
-            <View
-                android:id="@+id/backtrqwaz"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@drawable/trqwaz_circle" />
-
-        </LinearLayout>
-    </RelativeLayout>
-
-    <LinearLayout
-        android:id="@+id/Attachments"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:orientation="horizontal"
-        android:visibility="gone">
-
-        <ImageView
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:src="@drawable/v_attachment" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical"
-            android:text="Attachments"
-            android:textColor="#000"
-            android:textSize="18sp" />
     </LinearLayout>
-
-</LinearLayout>
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/undo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="15dp"
+        android:clickable="true"
+        android:elevation="20dp"
+        android:outlineSpotShadowColor="#fff"
+        android:src="@drawable/undo"
+        app:rippleColor="#fff" />
+</RelativeLayout>

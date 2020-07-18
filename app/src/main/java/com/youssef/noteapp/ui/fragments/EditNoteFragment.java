@@ -290,12 +290,14 @@ public class EditNoteFragment extends Fragment
         linearLayout = editNoteFragment.findViewById(R.id.LinearColor);
         BackGrounLinear = editNoteFragment.findViewById(R.id.LinearBackgroundColor);
         Attachment = editNoteFragment.findViewById(R.id.Attachments);
+        if(noteModel.getImageUrl () != null)
+            Attachment.setVisibility ( View.VISIBLE );
         Attachment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 FragmentManager fragmentManager = requireActivity ().getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                Fragment fragment=new AttachmentFragment();
+                Fragment fragment=new AttachmentFragment(noteModel.getImageUrl ());
                 fragmentTransaction.replace(R.id.Frame, fragment);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
@@ -568,6 +570,8 @@ public class EditNoteFragment extends Fragment
                     for (int i = 0; i < count; i++) {
                         image_uri = clipData.getItemAt(i).getUri();
                         ImagesUri.add(image_uri);
+                        noteModel.setImageUrl ( noteModel.getImageUrl () +"#"+image_uri );
+                        new updateNote ().execute ( noteModel );
                     }
 
                 } else if (data.getData() != null) {

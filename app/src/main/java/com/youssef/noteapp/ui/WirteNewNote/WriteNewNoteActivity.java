@@ -31,6 +31,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -50,6 +51,7 @@ import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.squareup.picasso.Picasso;
 import com.youssef.noteapp.R;
 import com.youssef.noteapp.data.local.AppDataBase;
 import com.youssef.noteapp.models.NoteModel;
@@ -85,7 +87,7 @@ public class WriteNewNoteActivity extends AppCompatActivity {
     private int Storage_Code = 100;
     private Uri image_uri;
     private List<Uri> ImagesUri = new ArrayList<>();
-    public  String SaveImagesString;
+    public  String SaveImagesString = "";
     public static final String FONT = "res/font/notonaskharabic_regular.ttf";
     public static final String ARABIC = "\u0627\u0644\u0633\u0639\u0631 \u0627\u0644\u0627\u062c\u0645\u0627\u0644\u064a";
     private SharedPreferences preferences;
@@ -128,8 +130,8 @@ public class WriteNewNoteActivity extends AppCompatActivity {
             public void onClick(View view) {
                 FragmentManager fragmentManager = getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                Fragment fragment=new AttachmentFragment();
-                fragmentTransaction.replace(R.id.Frame, fragment);
+                Fragment fragment=new AttachmentFragment(SaveImagesString);
+                fragmentTransaction.replace(R.id.ree, fragment);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
             }
@@ -517,7 +519,7 @@ public class WriteNewNoteActivity extends AppCompatActivity {
                     for (int i = 0; i < count; i++) {
                         image_uri = clipData.getItemAt(i).getUri();
                         ImagesUri.add(image_uri);
-                        SaveImagesString += "{"+image_uri.toString ();
+                        SaveImagesString += "#"+image_uri.toString ();
                     }
 
                 } else if (data.getData() != null) {

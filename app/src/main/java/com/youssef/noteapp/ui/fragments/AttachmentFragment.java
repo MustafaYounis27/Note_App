@@ -23,16 +23,36 @@ import com.youssef.noteapp.R;
 import com.youssef.noteapp.models.NoteModel;
 import com.youssef.noteapp.ui.WirteNewNote.WriteNewNoteActivity;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class AttachmentFragment extends Fragment {
     private View view;
     private Context context;
-    private List<String> Images;
+    private List<String> imageList = new ArrayList<> ();
+    private String images;
+
+    public AttachmentFragment(String images)
+    {
+        this.images=images;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context=getContext();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart ();
+
+        String[] imageArray = images.split ( "#" );
+        for (int i = 1; i < imageArray.length; i++)
+        {
+            imageList.add ( imageArray[i] );
+        }
     }
 
     @Override
@@ -45,14 +65,13 @@ public class AttachmentFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        //InitRecycler();
+        InitRecycler();
     }
 
     private void InitRecycler(){
         RecyclerView recyclerView=view.findViewById(R.id.AttachmentRecycler);
         recyclerView.addItemDecoration(new DividerItemDecoration(getContext(),DividerItemDecoration.VERTICAL));
-        //Images= WriteNewNoteActivity.SaveImagesString;
-        ImagesAdapter imagesAdapter=new ImagesAdapter(Images);
+        ImagesAdapter imagesAdapter=new ImagesAdapter(imageList);
         recyclerView.setAdapter(imagesAdapter);
     }
     class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImagesHolder> {
@@ -76,7 +95,6 @@ public class AttachmentFragment extends Fragment {
             holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {
-                //    WriteNewNoteActivity.SaveImagesString.remove(position);
                     Toast.makeText(getContext(), "deleted", Toast.LENGTH_SHORT).show();
                     return false;
                 }

@@ -126,7 +126,8 @@ public class HomeFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String word = s.toString ();
-                new getSearchData ().execute ( word );
+                if(joinButton.getVisibility () == View.GONE)
+                    new getSearchData ().execute ( word );
             }
 
             @Override
@@ -194,11 +195,6 @@ public class HomeFragment extends Fragment {
     private void exportNoteFromFirebase(String noteId)
     {
         new checkNoteFound ().execute ( noteId );
-    }
-
-    private void completeSearch(String word)
-    {
-        new getSearchData ().execute ( word );
     }
 
     class checkNoteFound extends AsyncTask<String,Void,NoteModel>
@@ -356,6 +352,8 @@ public class HomeFragment extends Fragment {
             holder.Date.setText(noteModel.getDate());
             if(noteModel.getOnline_state () == 1)
                 holder.onlineState.setVisibility ( View.VISIBLE );
+            if(!noteModel.getImageUrl ().isEmpty ())
+                holder.attachmentIcon.setVisibility ( View.VISIBLE );
             if(!noteModel.getBackground_color().equals("#fff")){
                 holder.background.setBackgroundColor (Color.parseColor(noteModel.getBackground_color()));
             }
@@ -389,7 +387,7 @@ public class HomeFragment extends Fragment {
             TextView Title,Subjec,Date;
             View background;
             LinearLayout editNote;
-            ImageView onlineState;
+            ImageView onlineState, attachmentIcon;
            public NotesViewHolder(@NonNull View itemView) {
                super(itemView);
                Title=itemView.findViewById(R.id.note_title);
@@ -398,6 +396,7 @@ public class HomeFragment extends Fragment {
                background=itemView.findViewById(R.id.HomeBackGroundColor);
                editNote=itemView.findViewById ( R.id.edit_note );
                onlineState=itemView.findViewById ( R.id.online_state );
+               attachmentIcon=itemView.findViewById ( R.id.attachment_icon );
            }
        }
     }

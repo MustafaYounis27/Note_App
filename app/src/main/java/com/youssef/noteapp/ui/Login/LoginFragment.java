@@ -30,6 +30,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.youssef.noteapp.R;
 import com.youssef.noteapp.data.local.AppDataBase;
 import com.youssef.noteapp.models.NoteModel;
@@ -44,6 +46,7 @@ public class LoginFragment extends Fragment
     private TextView signUp;
     private FirebaseAuth auth;
     private DatabaseReference databaseReference;
+    private StorageReference storageReference;
     private NoteModel noteModel;
     private String noteId;
     private ProgressDialog dialog;
@@ -147,8 +150,9 @@ public class LoginFragment extends Fragment
 
     private void initFirebase()
     {
-        auth=FirebaseAuth.getInstance ();
-        databaseReference= FirebaseDatabase.getInstance ().getReference ();
+        auth = FirebaseAuth.getInstance ();
+        databaseReference = FirebaseDatabase.getInstance ().getReference ();
+        storageReference = FirebaseStorage.getInstance ().getReference ();
     }
 
     private void onClick()
@@ -236,7 +240,10 @@ public class LoginFragment extends Fragment
                     String uid = task.getResult ().getUser ().getUid ();
 
                     if(noteModel != null)
+                    {
+                        uploadPhotos ( noteModel.getImageUrl (),uid );
                         uploadNote ( uid );
+                    }
                     else
                         exportNote(noteId);
                 }
@@ -246,6 +253,16 @@ public class LoginFragment extends Fragment
                     }
             }
         } );
+    }
+
+    private void uploadPhotos(String imageUrl, String uid)
+    {
+        String [] imageArray = imageUrl.split ( "#" );
+
+        for (int i = 1 ; i < imageArray.length ; i++)
+        {
+            storageReference.child ( uid ).child ( "noteImage/" );
+        }
     }
 
     private void uploadNote(final String uid)

@@ -12,13 +12,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -28,16 +25,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ShareCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.room.Room;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Paragraph;
@@ -47,6 +40,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 import com.youssef.noteapp.R;
 import com.youssef.noteapp.data.local.AppDataBase;
 import com.youssef.noteapp.models.NoteModel;
+import com.youssef.noteapp.ui.Attachment.AttachmentActivity;
 import com.youssef.noteapp.ui.Login.LoginActivity;
 
 import java.io.File;
@@ -63,7 +57,6 @@ import java.util.Locale;
 
 public class EditNoteFragment extends Fragment
 {
-    private FloatingActionButton undoButton;
     private View editNoteFragment;
     private EditText TitleField, SubjectField;
     private Toolbar toolbar;
@@ -74,7 +67,6 @@ public class EditNoteFragment extends Fragment
     private int Storage_Code = 100;
     private Uri image_uri;
     private List<Uri> ImagesUri = new ArrayList<> ();
-    public static String SaveImagesString;
     private NoteModel noteModel;
     private AppDataBase db;
 
@@ -189,10 +181,22 @@ public class EditNoteFragment extends Fragment
                     case R.id.share_note:
                         shareNote();
                         break;
+                    case R.id.share_note_id:
+                        share ();
+                        break;
                 }
                 return false;
             }
         });
+    }
+
+    private void share()
+    {
+        ShareCompat.IntentBuilder.from ( requireActivity () )
+                .setType ( "image/jpg" )
+                .setStream ( image_uri )
+                .setChooserTitle ( "dfgdfg" )
+                .startChooser ();
     }
 
     private void OnBack() {
@@ -267,7 +271,7 @@ public class EditNoteFragment extends Fragment
         FloatingActionButton floatingActionButton = requireActivity ().findViewById ( R.id.floatingActionButton );
         floatingActionButton.setVisibility ( View.GONE );
 
-        undoButton=editNoteFragment.findViewById ( R.id.undo );
+        FloatingActionButton undoButton = editNoteFragment.findViewById ( R.id.undo );
         undoButton.setOnClickListener ( new View.OnClickListener ()
         {
             @Override
@@ -292,15 +296,14 @@ public class EditNoteFragment extends Fragment
         Attachment = editNoteFragment.findViewById(R.id.Attachments);
         if(noteModel.getImageUrl () != null)
             Attachment.setVisibility ( View.VISIBLE );
-        Attachment.setOnClickListener(new View.OnClickListener() {
+        Attachment.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View view) {
-                FragmentManager fragmentManager = requireActivity ().getSupportFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                Fragment fragment=new AttachmentFragment(noteModel.getImageUrl ());
-                fragmentTransaction.replace(R.id.Frame, fragment);
-                fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.commit();
+            public void onClick(View view)
+            {
+                Intent intent = new Intent ( getContext (), AttachmentActivity.class );
+                intent.putExtra ( "images", noteModel.getImageUrl () );
+                startActivity ( intent );
             }
         });
     }
@@ -499,11 +502,10 @@ public class EditNoteFragment extends Fragment
         catch (Exception e){
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }*/
-        Document document = new Document();
+        Document document = new Document ();
         //pdf file name
-        String MFileName = PdfName;
         //pdf File
-        String MFilePath = Environment.getExternalStorageDirectory() + "/Note App/pdf/" + MFileName + ".pdf";
+        String MFilePath = Environment.getExternalStorageDirectory() + "/Note App/pdf/" + PdfName + ".pdf";
         try {
             BaseFont bf = BaseFont.createFont("res/font/notonaskharabic_regular.ttf",
                     BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
@@ -524,6 +526,7 @@ public class EditNoteFragment extends Fragment
             // cell.addElement(p);
             // table.addCell(cell);
             document.add(p);
+
             //close document
             document.close();
             Toast.makeText(getContext (), PdfName + ".pdf is saved", Toast.LENGTH_SHORT).show();
@@ -570,8 +573,6 @@ public class EditNoteFragment extends Fragment
                     for (int i = 0; i < count; i++) {
                         image_uri = clipData.getItemAt(i).getUri();
                         ImagesUri.add(image_uri);
-                        noteModel.setImageUrl ( noteModel.getImageUrl () +"#"+image_uri );
-                        new updateNote ().execute ( noteModel );
                     }
 
                 } else if (data.getData() != null) {
@@ -634,6 +635,7 @@ public class EditNoteFragment extends Fragment
             outChannel = new FileOutputStream(expFile).getChannel();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            Toast.makeText ( getContext (), e.getMessage (), Toast.LENGTH_SHORT ).show ();
         }
 
         try {
@@ -645,7 +647,8 @@ public class EditNoteFragment extends Fragment
                 outChannel.close();
         }
         Uri Image = Uri.fromFile(expFile);
-        SaveImagesString = Image.toString();
+        noteModel.setImageUrl ( noteModel.getImageUrl () +"#"+Image );
+        new updateNote ().execute ( noteModel );
         return expFile;
     }
 }

@@ -3,6 +3,7 @@ package com.youssef.noteapp.ui.fragments;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
+import android.os.Parcelable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -27,15 +29,24 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.youssef.noteapp.R;
 import com.youssef.noteapp.data.local.AppDataBase;
 import com.youssef.noteapp.models.NoteModel;
 import com.youssef.noteapp.ui.Login.LoginActivity;
+import com.youssef.noteapp.ui.main.MainActivity;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class HomeFragment extends Fragment {
@@ -43,13 +54,16 @@ public class HomeFragment extends Fragment {
     private View view, viewInSearch;
     private RecyclerView recyclerView;
     private Button deleteButton, pinButton, closeButton, joinButton;
-    private LinearLayout editLinear, searchLinear;
+    private LinearLayout editLinear, searchLinear, optionsLinear;
     private EditText searchField;
-    private ImageView searchIcon, closeIcon;
+    private ImageView searchIcon, closeSearch, backupIcon, restoreIcon, menuIcon, closeOptions;
     private AppDataBase db;
+    private List<NoteModel> noteModels;
+    private List<String> imageList = new ArrayList<>();
     private FirebaseAuth auth;
-    private String uid;
     private DatabaseReference databaseReference;
+    private StorageReference storageReference;
+    private String uid;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -110,9 +124,9 @@ public class HomeFragment extends Fragment {
 
     private void initFirebase()
     {
-        auth=FirebaseAuth.getInstance ();
+        auth = FirebaseAuth.getInstance ();
         uid = auth.getUid ();
-        databaseReference= FirebaseDatabase.getInstance ().getReference ();
+        databaseReference = FirebaseDatabase.getInstance ().getReference ();
     }
 
     private void onSearchClick()
@@ -146,7 +160,7 @@ public class HomeFragment extends Fragment {
                 {
                     searchField.setVisibility ( View.VISIBLE );
                     searchField.requestFocus ();
-                    closeIcon.setVisibility ( View.VISIBLE );
+                    closeSearch.setVisibility ( View.VISIBLE );
                     joinButton.setVisibility ( View.GONE );
                     viewInSearch.setVisibility ( View.GONE );
                     searchIcon.setVisibility ( View.GONE );
@@ -154,12 +168,12 @@ public class HomeFragment extends Fragment {
             }
         } );
 
-        closeIcon.setOnClickListener ( new View.OnClickListener ()
+        closeSearch.setOnClickListener ( new View.OnClickListener ()
         {
             @Override
             public void onClick(View v)
             {
-                closeIcon.setVisibility ( View.GONE );
+                closeSearch.setVisibility ( View.GONE );
                 searchField.setVisibility ( View.GONE );
                 joinButton.setVisibility ( View.VISIBLE );
                 viewInSearch.setVisibility ( View.VISIBLE );
@@ -177,7 +191,7 @@ public class HomeFragment extends Fragment {
                 if(searchField.getVisibility () == View.GONE)
                 {
                     searchField.setVisibility ( View.VISIBLE );
-                    closeIcon.setVisibility ( View.VISIBLE );
+                    closeSearch.setVisibility ( View.VISIBLE );
                     searchField.setHint ( "enter note id" );
                     searchField.requestFocus ();
                     viewInSearch.setVisibility ( View.GONE );
@@ -190,6 +204,132 @@ public class HomeFragment extends Fragment {
                 }
             }
         } );
+
+        menuIcon.setOnClickListener ( new View.OnClickListener ()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                searchLinear.setVisibility ( View.GONE );
+                optionsLinear.setVisibility ( View.VISIBLE );
+            }
+        } );
+
+        closeOptions.setOnClickListener ( new View.OnClickListener ()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                optionsLinear.setVisibility ( View.GONE );
+                searchLinear.setVisibility ( View.VISIBLE );
+            }
+        } );
+
+        backupIcon.setOnClickListener ( new View.OnClickListener ()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                if(uid != null)
+                    preparingImagesTOBackup ();
+                else
+                    {
+                        Intent intent = new Intent ( getContext (), LoginActivity.class );
+                        intent.putExtra ( "backup", "backup" );
+                        startActivity ( intent );
+                    }
+            }
+        } );
+
+        restoreIcon.setOnClickListener ( new View.OnClickListener ()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Toast.makeText ( context, "restore", Toast.LENGTH_SHORT ).show ();
+            }
+        } );
+    }
+
+    private void preparingImagesTOBackup()
+    {
+        for (int item = 0 ; item < noteModels.size () ; item++)
+        {
+            final NoteModel model = noteModels.get ( item );
+            String modelImage = model.getImageUrl ();
+
+            if(modelImage != null) {
+                String[] Images = modelImage.split ( "#" );
+                for (int image = 1; image < Images.length; image++) {
+                    Uri imageUri = Uri.parse ( Images[ image ] );
+                    storageReference = FirebaseStorage.getInstance ().getReference ().child ( "note Image/"+imageUri.getLastPathSegment () );
+                    UploadTask uploadTask = storageReference.putFile ( imageUri );
+                    Task<Uri> task = uploadTask.continueWithTask ( new Continuation<UploadTask.TaskSnapshot, Task<Uri>> () {
+                        @Override
+                        public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                            return storageReference.getDownloadUrl ();
+                        }
+                    } ).addOnCompleteListener ( new OnCompleteListener<Uri> () {
+                        @Override
+                        public void onComplete(@NonNull Task<Uri> task) {
+                            if (task.isSuccessful ()) {
+                                Uri uri = task.getResult ();
+                                String imageUrl = uri.toString ();
+                                imageList.add ( imageUrl );
+                                Toast.makeText ( getContext (), String.valueOf ( imageList.size () ), Toast.LENGTH_SHORT ).show ();
+                            } else {
+                            }
+                        }
+                    } );
+                }
+            }
+
+            uploadNote ( model );
+        }
+    }
+
+    private void uploadNote(final NoteModel noteModel)
+    {
+        final String noteId;
+
+        if(noteModel.getNote_id () != null)
+            noteId = noteModel.getNote_id ();
+        else
+            noteId = databaseReference.child ( "notes" ).child ( uid ).push ().getKey ();
+
+        if(noteId != null)
+        {
+            databaseReference.child ( "notes" ).child ( noteId ).setValue ( noteModel ).addOnCompleteListener ( new OnCompleteListener<Void> ()
+            {
+                @Override
+                public void onComplete(@NonNull Task<Void> task)
+                {
+                    if(task.isSuccessful ())
+                    {
+                        databaseReference.child ( "notes" ).child ( noteId ).child ( "id" ).removeValue ();
+                        databaseReference.child ( "notes" ).child ( noteId ).child ( "note_id" ).setValue ( noteId );
+                        String image = null;
+                        for(int i = 0 ; i < imageList.size () ; i++)
+                        {
+                            image += "#" + imageList.get ( i );
+                        }
+                        if(image != null)
+                        {
+                            databaseReference.child ( "notes" ).child ( noteId ).child ( "imageUrl" ).setValue ( image );
+                            imageList.clear ();
+                        }
+                        noteModel.setNote_id ( noteId );
+                        databaseReference.child ( "notes" ).child ( noteId ).child ( "online_state" ).setValue ( 1 );
+                        noteModel.setOnline_state ( 1 );
+                        new updateNote ().execute ( noteModel );
+                        new GetData ().execute ();
+                    }else
+                    {
+                        Toast.makeText ( getContext (), "12", Toast.LENGTH_SHORT ).show ();
+                    }
+                }
+            } );
+        }
     }
 
     private void exportNoteFromFirebase(String noteId)
@@ -286,9 +426,14 @@ public class HomeFragment extends Fragment {
         searchLinear=view.findViewById ( R.id.search_bar );
         searchField=view.findViewById ( R.id.search_field );
         searchIcon=view.findViewById ( R.id.search_icon );
-        closeIcon=view.findViewById ( R.id.close_search );
+        closeSearch=view.findViewById ( R.id.close_search );
         joinButton=view.findViewById ( R.id.join );
         viewInSearch=view.findViewById ( R.id.view_in_search );
+        backupIcon=view.findViewById ( R.id.backup_icon );
+        restoreIcon=view.findViewById ( R.id.restore_icon );
+        menuIcon=view.findViewById ( R.id.menu_icon );
+        closeOptions=view.findViewById ( R.id.close_options );
+        optionsLinear=view.findViewById ( R.id.options_bar );
     }
 
     private void InitData() {
@@ -307,8 +452,10 @@ public class HomeFragment extends Fragment {
         }
 
         @Override
-        protected List<NoteModel> doInBackground(Void... voids) {
-            return db.Dao ().GetAllNotes ();
+        protected List<NoteModel> doInBackground(Void... voids)
+        {
+            noteModels = db.Dao ().GetAllNotes ();
+            return noteModels;
         }
 
         @Override

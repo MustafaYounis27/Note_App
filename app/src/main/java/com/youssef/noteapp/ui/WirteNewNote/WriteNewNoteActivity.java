@@ -1,21 +1,16 @@
 package com.youssef.noteapp.ui.WirteNewNote;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.room.Room;
 
 import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ClipData;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -29,44 +24,27 @@ import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
-import com.itextpdf.text.FontFactory;
-import com.itextpdf.text.Image;
 import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Phrase;
-import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.BaseFont;
-import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
-import com.squareup.picasso.Picasso;
 import com.youssef.noteapp.R;
 import com.youssef.noteapp.data.local.AppDataBase;
 import com.youssef.noteapp.models.NoteModel;
+import com.youssef.noteapp.ui.Attachment.AttachmentActivity;
 import com.youssef.noteapp.ui.Login.LoginActivity;
-import com.youssef.noteapp.ui.fragments.AttachmentFragment;
-import com.youssef.noteapp.ui.fragments.EditNoteFragment;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URI;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -125,15 +103,14 @@ public class WriteNewNoteActivity extends AppCompatActivity {
         linearLayout = findViewById(R.id.LinearColor);
         BackGrounLinear = findViewById(R.id.LinearBackgroundColor);
         Attachment = findViewById(R.id.Attachments);
-        Attachment.setOnClickListener(new View.OnClickListener() {
+        Attachment.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View view) {
-                FragmentManager fragmentManager = getSupportFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                Fragment fragment=new AttachmentFragment(SaveImagesString);
-                fragmentTransaction.replace(R.id.ree, fragment);
-                fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.commit();
+            public void onClick(View view)
+            {
+                Intent intent = new Intent ( getApplicationContext (), AttachmentActivity.class );
+                intent.putExtra ( "images", SaveImagesString );
+                startActivity ( intent );
             }
         });
     }
@@ -519,7 +496,6 @@ public class WriteNewNoteActivity extends AppCompatActivity {
                     for (int i = 0; i < count; i++) {
                         image_uri = clipData.getItemAt(i).getUri();
                         ImagesUri.add(image_uri);
-                        SaveImagesString += "#"+image_uri.toString ();
                     }
 
                 } else if (data.getData() != null) {
@@ -527,7 +503,6 @@ public class WriteNewNoteActivity extends AppCompatActivity {
                         Attachment.setVisibility(View.VISIBLE);
                     }
                     ImagesUri.add(data.getData());
-                    SaveImagesString += "{"+data.getData();
                 }
                 SaveImageInMyFile(ImagesUri);
             }
@@ -594,6 +569,7 @@ public class WriteNewNoteActivity extends AppCompatActivity {
                 outChannel.close();
         }
         Uri Image = Uri.fromFile(expFile);
+        SaveImagesString += "#"+Image;
         return expFile;
     }
 

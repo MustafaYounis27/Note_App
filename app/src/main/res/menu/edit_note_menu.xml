@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/share_note_id"
+        android:title="Share noteId"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/share"
+        />
     <item
         android:id="@+id/share_note"
         android:title="Share note"

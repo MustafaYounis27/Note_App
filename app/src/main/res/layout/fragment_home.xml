@@ -71,6 +71,51 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/options_bar"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:background="#EF5D5D"
+            android:padding="5dp"
+            android:visibility="gone"
+            >
+
+            <ImageView
+                android:id="@+id/close_options"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginRight="5dp"
+                android:src="@drawable/close_icon"
+                />
+
+            <View
+                android:id="@+id/view_in_options"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="#EF5D5D"
+                />
+
+            <ImageView
+                android:id="@+id/backup_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="15dp"
+                android:src="@drawable/backup"
+                />
+
+            <ImageView
+                android:id="@+id/restore_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="5dp"
+                android:src="@drawable/restore"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/search_bar"
             android:layout_width="match_parent"
             android:layout_height="50dp"
@@ -130,6 +175,14 @@
                 android:background="#EF5D5D"
                 android:layout_marginLeft="5dp"
                 android:layout_marginRight="5dp"
+                />
+
+            <ImageView
+                android:id="@+id/menu_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="5dp"
+                android:src="@drawable/menu"
                 />
 
         </LinearLayout>

@@ -13,6 +13,8 @@ import com.youssef.noteapp.R;
 import com.youssef.noteapp.models.NoteModel;
 import com.youssef.noteapp.ui.main.MainActivity;
 
+import java.util.List;
+
 public class LoginActivity extends AppCompatActivity
 {
     NoteModel noteModel;
@@ -26,6 +28,10 @@ public class LoginActivity extends AppCompatActivity
 
         noteId = getIntent ().getStringExtra ( "noteId" );
         noteModel = (NoteModel) getIntent ().getSerializableExtra ( "noteModel" );
+        List<NoteModel> noteModels = (List<NoteModel>) getIntent ().getSerializableExtra ( "noteModels" );
+
+        if(noteModels != null)
+            replaceFragment ( new LoginFragment (noteModels) );
         if(noteModel != null)
             replaceFragment ( new LoginFragment (noteModel) );
         else

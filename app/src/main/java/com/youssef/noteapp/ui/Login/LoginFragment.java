@@ -1,6 +1,7 @@
 package com.youssef.noteapp.ui.Login;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -37,6 +38,8 @@ import com.youssef.noteapp.data.local.AppDataBase;
 import com.youssef.noteapp.models.NoteModel;
 import com.youssef.noteapp.ui.main.MainActivity;
 
+import java.util.List;
+
 public class LoginFragment extends Fragment
 {
     private View loginFragment;
@@ -48,13 +51,26 @@ public class LoginFragment extends Fragment
     private DatabaseReference databaseReference;
     private StorageReference storageReference;
     private NoteModel noteModel;
+    private List<NoteModel> noteModels;
     private String noteId;
     private ProgressDialog dialog;
     private AppDataBase db;
+    Context context;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate ( savedInstanceState );
+        context=getContext ();
+    }
 
     public LoginFragment(NoteModel noteModel)
     {
         this.noteModel=noteModel;
+    }
+
+    public LoginFragment(List<NoteModel> noteModels)
+    {
+        this.noteModels=noteModels;
     }
 
     public LoginFragment(String noteId)
@@ -68,27 +84,6 @@ public class LoginFragment extends Fragment
     {
         loginFragment = inflater.inflate ( R.layout.fragment_login,null );
         return loginFragment;
-    }
-
-    @Override
-    public void onStart()
-    {
-        super.onStart ();
-
-        initDialog ();
-
-        FirebaseUser user = auth.getCurrentUser ();
-        if(user != null)
-        {
-            if(noteModel != null)
-                uploadNote ( user.getUid () );
-            else
-                exportNote(noteId);
-        }else
-            {
-                Toast.makeText ( getContext (), "please login or sign up", Toast.LENGTH_SHORT ).show ();
-            }
-
     }
 
     private void exportNote(final String noteId)
@@ -131,7 +126,7 @@ public class LoginFragment extends Fragment
 
     private void initDialog()
     {
-        dialog = new ProgressDialog (getContext ());
+        dialog = new ProgressDialog (context);
         dialog.setTitle("upload note");
         dialog.setMessage("please waite...");
         dialog.setCancelable(false);
@@ -141,11 +136,31 @@ public class LoginFragment extends Fragment
     public void onActivityCreated(@Nullable Bundle savedInstanceState)
     {
         super.onActivityCreated ( savedInstanceState );
+        initDialog ();
+        initFirebase ();
+        initData ();
+        initViews ();
+        onClick ();
+        FirebaseUser user = auth.getCurrentUser ();
+        if(user!=null){
+            uploading(user);
+        }
+    }
 
-        initData();
-        initFirebase();
-        initViews();
-        onClick();
+    private void uploading(FirebaseUser user) {
+
+        if (noteModels != null)
+        {
+            for(int i = 0 ; i < noteModels.size () ; i++)
+            {
+                uploadNote ( noteModels.get ( i ),user.getUid () );
+            }
+        }else {
+            if (noteModel != null)
+                uploadNote ( noteModel, user.getUid () );
+            else
+                exportNote ( noteId );
+        }
     }
 
     private void initFirebase()
@@ -225,6 +240,7 @@ public class LoginFragment extends Fragment
             return;
         }
 
+
         completeLogin(email,password);
     }
 
@@ -239,13 +255,16 @@ public class LoginFragment extends Fragment
                 {
                     String uid = task.getResult ().getUser ().getUid ();
 
-                    if(noteModel != null)
-                    {
-                        uploadPhotos ( noteModel.getImageUrl (),uid );
-                        uploadNote ( uid );
-                    }
+                    String backup = requireActivity ().getIntent ().getStringExtra ( "backup" );
+                    if(backup != null && backup.equals ( "backup" ))
+                        onBack ();
                     else
-                        exportNote(noteId);
+                        {
+                        if (noteModel != null)
+                            uploadNote ( noteModel,uid );
+                        else
+                            exportNote ( noteId );
+                    }
                 }
                 else
                     {
@@ -255,17 +274,7 @@ public class LoginFragment extends Fragment
         } );
     }
 
-    private void uploadPhotos(String imageUrl, String uid)
-    {
-        String [] imageArray = imageUrl.split ( "#" );
-
-        for (int i = 1 ; i < imageArray.length ; i++)
-        {
-            storageReference.child ( uid ).child ( "noteImage/" );
-        }
-    }
-
-    private void uploadNote(final String uid)
+    private void uploadNote(final NoteModel noteModel, final String uid)
     {
         final String noteId;
 

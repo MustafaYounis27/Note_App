@@ -2,10 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/share_note"
         android:title="Share note"/>
-    <item android:id="@+id/NewNoteChangeTextColor"
-        android:title="Text Color"/>
     <item android:id="@+id/NewNoteAttachment"
         android:title="upload picture"/>
+    <item android:id="@+id/NewNoteChangeTextColor"
+        android:title="Text Color"/>
     <item android:id="@+id/NewNoteChangeBackGroundColor"
         android:title="background Color"/>
     <item android:id="@+id/NewNoteSaveAsPdf"

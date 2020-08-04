@@ -12,6 +12,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.BackgroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -97,6 +100,7 @@ public class EditNoteFragment extends Fragment
         text_color=noteModel.getText_color ();
         setTextColor(text_color);
         setBackgroundColor(backgroun_color);
+
     }
 
     private void setBackgroundColor(String backgroun_color)
@@ -181,20 +185,17 @@ public class EditNoteFragment extends Fragment
                     case R.id.share_note:
                         shareNote();
                         break;
-                    case R.id.share_note_id:
-                        share ();
-                        break;
                 }
                 return false;
             }
         });
     }
 
-    private void share()
+    private void share(Uri uri)
     {
-        ShareCompat.IntentBuilder.from ( requireActivity () )
-                .setType ( "image/jpg" )
-                .setStream ( image_uri )
+        ShareCompat.IntentBuilder.from (this.getActivity ())
+                .setType ( "*/*" )
+                .setStream ( uri )
                 .setChooserTitle ( "dfgdfg" )
                 .startChooser ();
     }
@@ -289,7 +290,7 @@ public class EditNoteFragment extends Fragment
         TitleField = editNoteFragment.findViewById(R.id.TitleField);
         TitleField.setText ( noteModel.getTitle () );
         SubjectField = editNoteFragment.findViewById(R.id.SubjectField);
-        SubjectField.setText ( noteModel.getSubject () );
+        SubjectField.setText ( noteModel.getImageUrl () );
         toolbar = editNoteFragment.findViewById(R.id.toolbarId);
         linearLayout = editNoteFragment.findViewById(R.id.LinearColor);
         BackGrounLinear = editNoteFragment.findViewById(R.id.LinearBackgroundColor);
@@ -333,6 +334,7 @@ public class EditNoteFragment extends Fragment
                 SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.black));
                 linearLayout.setVisibility(View.GONE);
                 text_color = "#000000";
+                setSpan(text_color);
             }
         });
 
@@ -388,6 +390,46 @@ public class EditNoteFragment extends Fragment
                 text_color = "#009688";
             }
         });
+    }
+
+    private void setSpan(String text_color)
+    {
+        switch (text_color)
+        {
+            case "#000000":
+                getSpan(requireActivity ().getResources().getColor(R.color.black));
+                break;
+            case "#696969":
+                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.gray));
+                break;
+            case "#FA0505":
+                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.read));
+                break;
+            case "#3F51B5":
+                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.blue));
+                break;
+            case "#4CAF50":
+                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.green));
+                break;
+            case "#CDDC39":
+                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.green2));
+                break;
+            case "#009688":
+                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.trqwaz));
+                break;
+        }
+    }
+
+    private void getSpan(final int color)
+    {
+        final String subject = SubjectField.getText ().toString ();
+
+        SpannableString spannableString = new SpannableString ( subject );
+
+        BackgroundColorSpan backgroundColorSpan = new BackgroundColorSpan ( color );
+        spannableString.setSpan ( backgroundColorSpan,0,subject.length (),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+
+        SubjectField.setText ( spannableString );
     }
 
     private void InitBackGroundClors() {
@@ -506,6 +548,7 @@ public class EditNoteFragment extends Fragment
         //pdf file name
         //pdf File
         String MFilePath = Environment.getExternalStorageDirectory() + "/Note App/pdf/" + PdfName + ".pdf";
+        Uri pdfuri=Uri.parse (new File(Environment.getExternalStorageDirectory() + "/Note App/pdf/" + PdfName + ".pdf").toString ());
         try {
             BaseFont bf = BaseFont.createFont("res/font/notonaskharabic_regular.ttf",
                     BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
@@ -530,6 +573,7 @@ public class EditNoteFragment extends Fragment
             //close document
             document.close();
             Toast.makeText(getContext (), PdfName + ".pdf is saved", Toast.LENGTH_SHORT).show();
+            share (pdfuri);
         } catch (Exception e) {
             Toast.makeText(getContext (), e.getMessage(), Toast.LENGTH_SHORT).show();
         }

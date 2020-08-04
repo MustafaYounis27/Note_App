@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ShareCompat;
 import androidx.core.content.ContextCompat;
 import androidx.room.Room;
 
@@ -430,6 +431,7 @@ public class WriteNewNoteActivity extends AppCompatActivity {
         String MFileName = PdfName;
         //pdf File
         String MFilePath = Environment.getExternalStorageDirectory() + "/Note App/pdf/" + MFileName + ".pdf";
+        Uri pdfuri=Uri.parse (new File(Environment.getExternalStorageDirectory() + "/Note App/pdf/" + PdfName + ".pdf").toString ());
         try {
             BaseFont bf = BaseFont.createFont("res/font/notonaskharabic_regular.ttf",
                     BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
@@ -453,9 +455,19 @@ public class WriteNewNoteActivity extends AppCompatActivity {
             //close document
             document.close();
             Toast.makeText(this, PdfName + ".pdf is saved", Toast.LENGTH_SHORT).show();
+            share (pdfuri);
         } catch (Exception e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void share(Uri uri)
+    {
+        ShareCompat.IntentBuilder.from (this)
+                .setType ( "*/*" )
+                .setStream ( uri )
+                .setChooserTitle ( "dfgdfg" )
+                .startChooser ();
     }
 
     @Override

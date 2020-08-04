@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item
-        android:id="@+id/share_note_id"
-        android:title="Share noteId"
-        app:showAsAction="ifRoom"
-        android:icon="@drawable/share"
-        />
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
     <item
         android:id="@+id/share_note"
         android:title="Share note"
@@ -27,4 +21,5 @@
         android:id="@+id/save_as_pdf"
         android:title="Save as pdf"
         />
+
 </menu>

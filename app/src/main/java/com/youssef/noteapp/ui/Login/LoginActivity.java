@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import com.youssef.noteapp.R;
 import com.youssef.noteapp.models.NoteModel;
+import com.youssef.noteapp.ui.EditNote.EditNoteActivity;
 import com.youssef.noteapp.ui.main.MainActivity;
 
 import java.util.List;
@@ -28,10 +29,15 @@ public class LoginActivity extends AppCompatActivity
 
         noteId = getIntent ().getStringExtra ( "noteId" );
         noteModel = (NoteModel) getIntent ().getSerializableExtra ( "noteModel" );
-        List<NoteModel> noteModels = (List<NoteModel>) getIntent ().getSerializableExtra ( "noteModels" );
+        String backup = getIntent ().getStringExtra ( "backup" );
 
-        if(noteModels != null)
-            replaceFragment ( new LoginFragment (noteModels) );
+        if(backup != null)
+        {
+            if(backup.equals ( "backup" ))
+                replaceFragment ( new LoginFragment ( 0 ) );
+            else
+                replaceFragment ( new LoginFragment ( 1 ) );
+        }
         if(noteModel != null)
             replaceFragment ( new LoginFragment (noteModel) );
         else
@@ -47,21 +53,12 @@ public class LoginActivity extends AppCompatActivity
     }
 
     @Override
-    public void onBackPressed()
-    {
+    public void onBackPressed() {
         super.onBackPressed ();
-
+        NoteModel noteModel = (NoteModel) getIntent ().getSerializableExtra ( "noteModel" );
         if(noteModel != null)
         {
-            Intent intent = new Intent ( getApplicationContext (), MainActivity.class );
-            intent.putExtra ( "noteModel",noteModel );
-            startActivity ( intent );
-            finish ();
-        }else
-            {
-                Intent intent = new Intent ( getApplicationContext (), MainActivity.class );
-                startActivity ( intent );
-                finish ();
-            }
+            startActivity ( new Intent ( getApplicationContext (), EditNoteActivity.class ) );
+        }
     }
 }

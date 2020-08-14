@@ -25,4 +25,6 @@ public interface Dao {
     List<NoteModel> search(String searchWord);
     @Query ( "SELECT * FROM notes_table WHERE note_id = :searchWord")
     NoteModel checkNoteFound(String searchWord);
+    @Query ( "UPDATE notes_table SET ImageUrl = :imageUrl WHERE note_id = :noteId" )
+    void updateImage(String imageUrl, String noteId);
 }

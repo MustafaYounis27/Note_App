@@ -1,4 +1,12 @@
-package com.youssef.noteapp.ui.fragments;
+package com.youssef.noteapp.ui.EditNote;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ShareCompat;
+import androidx.core.content.ContextCompat;
+import androidx.room.Room;
 
 import android.Manifest;
 import android.app.Activity;
@@ -15,23 +23,12 @@ import android.provider.MediaStore;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.BackgroundColorSpan;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ShareCompat;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-import androidx.room.Room;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.itextpdf.text.Document;
@@ -58,37 +55,21 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class EditNoteFragment extends Fragment
+public class EditNoteActivity extends AppCompatActivity
 {
-    private View editNoteFragment;
     private EditText TitleField, SubjectField;
     private Toolbar toolbar;
     private LinearLayout linearLayout, BackGrounLinear, Attachment;
-    private View gray, read, blue, green, green2, trqwaz, black;
-    private View backgray, backread, backblue, backgreen, backgreen2, backtrqwaz, backblack;
     private String text_color = null, backgroun_color = null;
     private int Storage_Code = 100;
-    private Uri image_uri;
     private List<Uri> ImagesUri = new ArrayList<> ();
     private NoteModel noteModel;
     private AppDataBase db;
 
-    public EditNoteFragment(NoteModel noteModel)
-    {
-        this.noteModel=noteModel;
-    }
-
-    @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
-        return editNoteFragment;
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState)
-    {
-        super.onActivityCreated ( savedInstanceState );
+    protected void onStart() {
+        super.onStart ();
+        noteModel = (NoteModel) getIntent ().getSerializableExtra ( "noteModel" );
 
         InitViews();
         InitClors();
@@ -100,6 +81,13 @@ public class EditNoteFragment extends Fragment
         text_color=noteModel.getText_color ();
         setTextColor(text_color);
         setBackgroundColor(backgroun_color);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate ( savedInstanceState );
+        setContentView ( R.layout.activity_edit_note );
 
     }
 
@@ -108,25 +96,25 @@ public class EditNoteFragment extends Fragment
         switch (backgroun_color)
         {
             case "#000000":
-                SubjectField.setBackgroundColor (requireActivity ().getResources().getColor(R.color.black));
+                SubjectField.setBackgroundColor (getResources().getColor(R.color.black));
                 break;
             case "#696969":
-                SubjectField.setBackgroundColor (requireActivity ().getResources().getColor(R.color.gray));
+                SubjectField.setBackgroundColor (getResources().getColor(R.color.gray));
                 break;
             case "#FA0505":
-                SubjectField.setBackgroundColor (requireActivity ().getResources().getColor(R.color.read));
+                SubjectField.setBackgroundColor (getResources().getColor(R.color.read));
                 break;
             case "#3F51B5":
-                SubjectField.setBackgroundColor (requireActivity ().getResources().getColor(R.color.blue));
+                SubjectField.setBackgroundColor (getResources().getColor(R.color.blue));
                 break;
             case "#4CAF50":
-                SubjectField.setBackgroundColor (requireActivity ().getResources().getColor(R.color.green));
+                SubjectField.setBackgroundColor (getResources().getColor(R.color.green));
                 break;
             case "#CDDC39":
-                SubjectField.setBackgroundColor (requireActivity ().getResources().getColor(R.color.green2));
+                SubjectField.setBackgroundColor (getResources().getColor(R.color.green2));
                 break;
             case "#009688":
-                SubjectField.setBackgroundColor (requireActivity ().getResources().getColor(R.color.trqwaz));
+                SubjectField.setBackgroundColor (getResources().getColor(R.color.trqwaz));
                 break;
         }
     }
@@ -136,34 +124,35 @@ public class EditNoteFragment extends Fragment
         switch (text_color)
         {
             case "#000000":
-                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.black));
+                SubjectField.setTextColor(getResources().getColor(R.color.black));
                 break;
             case "#696969":
-                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.gray));
+                SubjectField.setTextColor(getResources().getColor(R.color.gray));
                 break;
             case "#FA0505":
-                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.read));
+                SubjectField.setTextColor(getResources().getColor(R.color.read));
                 break;
             case "#3F51B5":
-                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.blue));
+                SubjectField.setTextColor(getResources().getColor(R.color.blue));
                 break;
             case "#4CAF50":
-                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.green));
+                SubjectField.setTextColor(getResources().getColor(R.color.green));
                 break;
             case "#CDDC39":
-                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.green2));
+                SubjectField.setTextColor(getResources().getColor(R.color.green2));
                 break;
             case "#009688":
-                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.trqwaz));
+                SubjectField.setTextColor(getResources().getColor(R.color.trqwaz));
                 break;
         }
     }
 
     private void InitData() {
-        db = Room.databaseBuilder(getContext (), AppDataBase.class, "db").build();
+        db = Room.databaseBuilder(this, AppDataBase.class, "db").build();
     }
 
-    private void OnItemCLick() {
+    private void OnItemCLick()
+    {
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -193,44 +182,46 @@ public class EditNoteFragment extends Fragment
 
     private void share(Uri uri)
     {
-        ShareCompat.IntentBuilder.from (this.getActivity ())
+        ShareCompat.IntentBuilder.from (this)
                 .setType ( "*/*" )
                 .setStream ( uri )
                 .setChooserTitle ( "dfgdfg" )
                 .startChooser ();
     }
 
-    private void OnBack() {
+    private void OnBack()
+    {
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String title = TitleField.getText().toString();
-                String subject = SubjectField.getText().toString();
-                if (!title.isEmpty() && !subject.isEmpty() && !title.equals ( noteModel.getTitle ()) || !subject.equals ( noteModel.getSubject ()) || !backgroun_color.equals ( noteModel.getBackground_color () ) ) {
-                    SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM hh:mm aa", Locale.getDefault());
-                    String currentDateandTime = sdf.format(new Date());
-                    if (text_color == null) {
-                        text_color = "#000000";
-                    }
-                    if (backgroun_color == null) {
-                        backgroun_color = "#ffffff";
-                    }
-                    noteModel.setSubject ( subject );
-                    noteModel.setTitle ( title );
-                    noteModel.setDate ( currentDateandTime );
-                    noteModel.setBackground_color ( backgroun_color );
-                    noteModel.setText_color ( text_color );
-                    new updateNote ().execute( noteModel );
-                    /*for (int i = 0; i < SaveImagesString ; i++) {
-                        editor.putString(title + i, SaveImagesString.get(i));
-                        editor.commit();
-                    }*/
-                    // Toast.makeText(getApplicationContext(), "saved", Toast.LENGTH_SHORT).show();
-                    //Toast.makeText(getApplicationContext(), ImagesUri.size()+"", Toast.LENGTH_SHORT).show();
-                }
-               requireActivity ().onBackPressed ();
+                onBackPressed ();
             }
         });
+    }
+
+    @Override
+    public void onBackPressed()
+    {
+        super.onBackPressed ();
+
+        String title = TitleField.getText().toString();
+        String subject = SubjectField.getText().toString();
+        if (!title.isEmpty() && !subject.isEmpty() && !title.equals ( noteModel.getTitle ()) || !subject.equals ( noteModel.getSubject ()) || !backgroun_color.equals ( noteModel.getBackground_color () ) ) {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM hh:mm aa", Locale.getDefault());
+            String currentDateandTime = sdf.format(new Date ());
+            if (text_color == null) {
+                text_color = "#000000";
+            }
+            if (backgroun_color == null) {
+                backgroun_color = "#ffffff";
+            }
+            noteModel.setSubject ( subject );
+            noteModel.setTitle ( title );
+            noteModel.setDate ( currentDateandTime );
+            noteModel.setBackground_color ( backgroun_color );
+            noteModel.setText_color ( text_color );
+            new updateNote ().execute( noteModel );
+        }
     }
 
     class updateNote extends AsyncTask<NoteModel,Void,Void>
@@ -262,17 +253,15 @@ public class EditNoteFragment extends Fragment
         noteModel.setBackground_color ( backgroun_color );
         noteModel.setText_color ( text_color );
         new updateNote ().execute( noteModel );
-        Intent share = new Intent ( getContext (), LoginActivity.class );
+        Intent share = new Intent ( getApplicationContext (), LoginActivity.class );
         share.putExtra ( "noteModel", noteModel );
         startActivity ( share );
-        requireActivity ().finish ();
+        finish ();
     }
 
-    private void InitViews() {
-        FloatingActionButton floatingActionButton = requireActivity ().findViewById ( R.id.floatingActionButton );
-        floatingActionButton.setVisibility ( View.GONE );
-
-        FloatingActionButton undoButton = editNoteFragment.findViewById ( R.id.undo );
+    private void InitViews()
+    {
+        FloatingActionButton undoButton = findViewById ( R.id.undo );
         undoButton.setOnClickListener ( new View.OnClickListener ()
         {
             @Override
@@ -282,19 +271,19 @@ public class EditNoteFragment extends Fragment
             }
         } );
 
-        TextView noteIdField = editNoteFragment.findViewById ( R.id.note_id );
+        TextView noteIdField = findViewById ( R.id.note_id );
         if(noteModel.getNote_id () != null)
         {
             noteIdField.setText ( noteModel.getNote_id () );
         }
-        TitleField = editNoteFragment.findViewById(R.id.TitleField);
+        TitleField = findViewById(R.id.TitleField);
         TitleField.setText ( noteModel.getTitle () );
-        SubjectField = editNoteFragment.findViewById(R.id.SubjectField);
-        SubjectField.setText ( noteModel.getSubject () );
-        toolbar = editNoteFragment.findViewById(R.id.toolbarId);
-        linearLayout = editNoteFragment.findViewById(R.id.LinearColor);
-        BackGrounLinear = editNoteFragment.findViewById(R.id.LinearBackgroundColor);
-        Attachment = editNoteFragment.findViewById(R.id.Attachments);
+        SubjectField = findViewById(R.id.SubjectField);
+        SubjectField.setText ( noteModel.getImageUrl () );
+        toolbar = findViewById(R.id.toolbarId);
+        linearLayout = findViewById(R.id.LinearColor);
+        BackGrounLinear = findViewById(R.id.LinearBackgroundColor);
+        Attachment = findViewById(R.id.Attachments);
         if(noteModel.getImageUrl () != null)
             Attachment.setVisibility ( View.VISIBLE );
         Attachment.setOnClickListener(new View.OnClickListener()
@@ -302,7 +291,7 @@ public class EditNoteFragment extends Fragment
             @Override
             public void onClick(View view)
             {
-                Intent intent = new Intent ( getContext (), AttachmentActivity.class );
+                Intent intent = new Intent ( getApplicationContext (), AttachmentActivity.class );
                 intent.putExtra ( "images", noteModel.getImageUrl () );
                 startActivity ( intent );
             }
@@ -319,195 +308,157 @@ public class EditNoteFragment extends Fragment
         setTextColor ( text_color );
     }
 
-    private void InitClors() {
-        black = editNoteFragment.findViewById(R.id.black);
-        gray = editNoteFragment.findViewById(R.id.gray);
-        read = editNoteFragment.findViewById(R.id.read);
-        blue = editNoteFragment.findViewById(R.id.blue);
-        green = editNoteFragment.findViewById(R.id.green);
-        green2 = editNoteFragment.findViewById(R.id.green2);
-        trqwaz = editNoteFragment.findViewById(R.id.trqwaz);
+    private void InitClors()
+    {
+        View black = findViewById ( R.id.black );
+        View gray = findViewById ( R.id.gray );
+        View read = findViewById ( R.id.read );
+        View blue = findViewById ( R.id.blue );
+        View green = findViewById ( R.id.green );
+        View green2 = findViewById ( R.id.green2 );
+        View trqwaz = findViewById ( R.id.trqwaz );
 
-        black.setOnClickListener(new View.OnClickListener() {
+        black.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.black));
+                SubjectField.setTextColor(getResources().getColor(R.color.black));
                 linearLayout.setVisibility(View.GONE);
                 text_color = "#000000";
-                setSpan(text_color);
             }
         });
 
-        gray.setOnClickListener(new View.OnClickListener() {
+        gray.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                TitleField.setTextColor(requireActivity ().getResources().getColor(R.color.gray));
+                TitleField.setTextColor(getResources().getColor(R.color.gray));
                 linearLayout.setVisibility(View.GONE);
                 text_color = "#696969";
             }
         });
 
-        read.setOnClickListener(new View.OnClickListener() {
+        read.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.read));
+                SubjectField.setTextColor(getResources().getColor(R.color.read));
                 linearLayout.setVisibility(View.GONE);
                 text_color = "#FA0505";
             }
         });
-        blue.setOnClickListener(new View.OnClickListener() {
+        blue.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.blue));
+                SubjectField.setTextColor(getResources().getColor(R.color.blue));
                 linearLayout.setVisibility(View.GONE);
                 text_color = "#3F51B5";
             }
         });
 
-        green.setOnClickListener(new View.OnClickListener() {
+        green.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.green));
+                SubjectField.setTextColor(getResources().getColor(R.color.green));
                 linearLayout.setVisibility(View.GONE);
                 text_color = "#4CAF50";
             }
         });
 
-        green2.setOnClickListener(new View.OnClickListener() {
+        green2.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.green2));
+                SubjectField.setTextColor(getResources().getColor(R.color.green2));
                 linearLayout.setVisibility(View.GONE);
                 text_color = "#CDDC39";
             }
         });
 
-        trqwaz.setOnClickListener(new View.OnClickListener() {
+        trqwaz.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.trqwaz));
+                SubjectField.setTextColor(getResources().getColor(R.color.trqwaz));
                 linearLayout.setVisibility(View.GONE);
                 text_color = "#009688";
             }
         });
     }
 
-    private void setSpan(String text_color)
+    private void InitBackGroundClors()
     {
-        switch (text_color)
-        {
-            case "#000000":
-                getSpan(requireActivity ().getResources().getColor(R.color.black));
-                break;
-            case "#696969":
-                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.gray));
-                break;
-            case "#FA0505":
-                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.read));
-                break;
-            case "#3F51B5":
-                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.blue));
-                break;
-            case "#4CAF50":
-                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.green));
-                break;
-            case "#CDDC39":
-                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.green2));
-                break;
-            case "#009688":
-                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.trqwaz));
-                break;
-        }
-    }
+        View backblack = findViewById ( R.id.backblack );
+        View backgray = findViewById ( R.id.backgray );
+        View backread = findViewById ( R.id.backread );
+        View backblue = findViewById ( R.id.backblue );
+        View backgreen = findViewById ( R.id.backgreen );
+        View backgreen2 = findViewById ( R.id.backgreen2 );
+        View backtrqwaz = findViewById ( R.id.backtrqwaz );
 
-    private void getSpan(final int color)
-    {
-        final String subject = SubjectField.getText ().toString ();
-
-        SpannableString spannableString = new SpannableString ( subject );
-
-        BackgroundColorSpan backgroundColorSpan = new BackgroundColorSpan ( color );
-        spannableString.setSpan ( backgroundColorSpan,0,subject.length (),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-
-        SubjectField.setText ( spannableString );
-    }
-
-    private void InitBackGroundClors() {
-        backblack = editNoteFragment.findViewById(R.id.backblack);
-        backgray = editNoteFragment.findViewById(R.id.backgray);
-        backread = editNoteFragment.findViewById(R.id.backread);
-        backblue = editNoteFragment.findViewById(R.id.backblue);
-        backgreen = editNoteFragment.findViewById(R.id.backgreen);
-        backgreen2 = editNoteFragment.findViewById(R.id.backgreen2);
-        backtrqwaz = editNoteFragment.findViewById(R.id.backtrqwaz);
-
-        backblack.setOnClickListener(new View.OnClickListener() {
+        backblack.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SubjectField.setBackgroundColor(requireActivity ().getResources().getColor(R.color.black));
+                SubjectField.setBackgroundColor(getResources().getColor(R.color.black));
                 BackGrounLinear.setVisibility(View.GONE);
                 backgroun_color = "#000000";
             }
         });
-        backgray.setOnClickListener(new View.OnClickListener() {
+        backgray.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                TitleField.setBackgroundColor(requireActivity ().getResources().getColor(R.color.gray));
+                TitleField.setBackgroundColor(getResources().getColor(R.color.gray));
                 BackGrounLinear.setVisibility(View.GONE);
                 backgroun_color = "#696969";
             }
         });
 
-        backread.setOnClickListener(new View.OnClickListener() {
+        backread.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SubjectField.setBackgroundColor(requireActivity ().getResources().getColor(R.color.read));
+                SubjectField.setBackgroundColor(getResources().getColor(R.color.read));
                 BackGrounLinear.setVisibility(View.GONE);
                 backgroun_color = "#FA0505";
             }
         });
-        backblue.setOnClickListener(new View.OnClickListener() {
+        backblue.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SubjectField.setBackgroundColor(requireActivity ().getResources().getColor(R.color.blue));
+                SubjectField.setBackgroundColor(getResources().getColor(R.color.blue));
                 BackGrounLinear.setVisibility(View.GONE);
                 backgroun_color = "#3F51B5";
             }
         });
 
-        backgreen.setOnClickListener(new View.OnClickListener() {
+        backgreen.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SubjectField.setTextColor(requireActivity ().getResources().getColor(R.color.green));
+                SubjectField.setTextColor(getResources().getColor(R.color.green));
                 BackGrounLinear.setVisibility(View.GONE);
                 backgroun_color = "#4CAF50";
             }
         });
 
-        backgreen2.setOnClickListener(new View.OnClickListener() {
+        backgreen2.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SubjectField.setBackgroundColor(requireActivity ().getResources().getColor(R.color.green2));
+                SubjectField.setBackgroundColor(getResources().getColor(R.color.green2));
                 linearLayout.setVisibility(View.GONE);
                 backgroun_color = "#CDDC39";
             }
         });
 
-        backtrqwaz.setOnClickListener(new View.OnClickListener() {
+        backtrqwaz.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SubjectField.setBackgroundColor(requireActivity ().getResources().getColor(R.color.trqwaz));
+                SubjectField.setBackgroundColor(getResources().getColor(R.color.trqwaz));
                 BackGrounLinear.setVisibility(View.GONE);
                 backgroun_color = "#009688";
             }
         });
     }
 
-    private void CheackPermisstion(String PdfName, String Subject) {
+    private void CheackPermisstion(String PdfName, String Subject)
+    {
         //cheack if version above than marshmello version
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
             //system os > marshmello check if permation is enable or not
-            if (ContextCompat.checkSelfPermission( requireContext (), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+            if (ContextCompat.checkSelfPermission( this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
                 //permission not enable
                 String[] permission = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
                 requestPermissions(permission, Storage_Code);
@@ -519,36 +470,13 @@ public class EditNoteFragment extends Fragment
         }
     }
 
-    private void SaveAsPdf(String PdfName, String Subject) {
-        /*//create object of Document class
-        Document document=new Document();
-        //pdf file name
-        String MFileName=PdfName;
-        //pdf File
-        String MFilePath= Environment.getExternalStorageDirectory()+"/Note App/pdf/"+MFileName+".pdf";
-        try {
-            //Create Instance Of Pdf Writer Class
-            PdfWriter.getInstance(document,new FileOutputStream(MFilePath));
-            //open the Document for writing
-            document.open();
-            // add author
-            document.addAuthor("youssef");
-            //add title
-            document.addTitle(PdfName);
-            //add praghraph
-            document.add(new Paragraph(Subject));
-            //close document
-            document.close();
-            Toast.makeText(this, PdfName+".pdf is saved", Toast.LENGTH_SHORT).show();
-        }
-        catch (Exception e){
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-        }*/
+    private void SaveAsPdf(String PdfName, String Subject)
+    {
         Document document = new Document ();
         //pdf file name
         //pdf File
         String MFilePath = Environment.getExternalStorageDirectory() + "/Note App/pdf/" + PdfName + ".pdf";
-        Uri pdfuri=Uri.parse (new File(Environment.getExternalStorageDirectory() + "/Note App/pdf/" + PdfName + ".pdf").toString ());
+        Uri pdfuri=Uri.parse (new File (Environment.getExternalStorageDirectory() + "/Note App/pdf/" + PdfName + ".pdf").toString ());
         try {
             BaseFont bf = BaseFont.createFont("res/font/notonaskharabic_regular.ttf",
                     BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
@@ -572,15 +500,16 @@ public class EditNoteFragment extends Fragment
 
             //close document
             document.close();
-            Toast.makeText(getContext (), PdfName + ".pdf is saved", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, PdfName + ".pdf is saved", Toast.LENGTH_SHORT).show();
             share (pdfuri);
         } catch (Exception e) {
-            Toast.makeText(getContext (), e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == Storage_Code) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -588,23 +517,24 @@ public class EditNoteFragment extends Fragment
                 String Subject = SubjectField.getText().toString();
                 SaveAsPdf(name, Subject);
             } else {
-                Toast.makeText(getContext (), "error permissions...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "error permissions...", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    public void Attatchment() {
+    public void Attatchment()
+    {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*"); //allows any image file type. Change * to specific extension to limit it
 //**The following line is the important one!
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-        Toast.makeText(getContext (), ImagesUri.size()+"", Toast.LENGTH_SHORT).show();
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), 505); //SELECT_PICTURES is simply a global int used to check the calling intent in onActivityResult
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 505) {
             if (resultCode == Activity.RESULT_OK) {
@@ -615,8 +545,8 @@ public class EditNoteFragment extends Fragment
                 if (clipData != null) {
                     int count = clipData.getItemCount(); //evaluate the count before the for loop --- otherwise, the count is evaluated every loop.
                     for (int i = 0; i < count; i++) {
-                        image_uri = clipData.getItemAt(i).getUri();
-                        ImagesUri.add(image_uri);
+                        Uri image_uri = clipData.getItemAt ( i ).getUri ();
+                        ImagesUri.add( image_uri );
                     }
 
                 } else if (data.getData() != null) {
@@ -630,16 +560,17 @@ public class EditNoteFragment extends Fragment
         }
     }
 
-    private void SaveImageInMyFile(List<Uri> imagesUri) {
+    private void SaveImageInMyFile(List<Uri> imagesUri)
+    {
         for (int i = 0; i < imagesUri.size(); i++) {
-            Toast.makeText(getContext (), imagesUri.get(i) + "cccc", Toast.LENGTH_SHORT).show();
             getRealPathFromURI(imagesUri.get(i), i);
         }
     }
 
-    private String getRealPathFromURI(Uri contentURI, int i) {
+    private String getRealPathFromURI(Uri contentURI, int i)
+    {
         String result;
-        Cursor cursor = requireActivity ().getContentResolver().query(contentURI, null, null, null, null);
+        Cursor cursor = getContentResolver().query(contentURI, null, null, null, null);
         if (cursor == null) { // Source is Dropbox or other similar local file path
             result = contentURI.getPath();
         } else {
@@ -660,7 +591,8 @@ public class EditNoteFragment extends Fragment
         return result;
     }
 
-    private File exportFile(File src, File dst, int i) throws IOException {
+    private File exportFile(File src, File dst, int i) throws IOException
+    {
 
         //if folder does not exist
         if (!dst.exists()) {
@@ -679,7 +611,7 @@ public class EditNoteFragment extends Fragment
             outChannel = new FileOutputStream(expFile).getChannel();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            Toast.makeText ( getContext (), e.getMessage (), Toast.LENGTH_SHORT ).show ();
+            Toast.makeText ( this, e.getMessage (), Toast.LENGTH_SHORT ).show ();
         }
 
         try {

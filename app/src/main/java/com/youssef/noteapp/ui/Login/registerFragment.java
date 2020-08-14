@@ -2,6 +2,7 @@ package com.youssef.noteapp.ui.Login;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -20,30 +21,41 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.room.Room;
 
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.youssef.noteapp.R;
 import com.youssef.noteapp.data.local.AppDataBase;
 import com.youssef.noteapp.models.NoteModel;
+import com.youssef.noteapp.ui.EditNote.EditNoteActivity;
 import com.youssef.noteapp.ui.main.MainActivity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class registerFragment extends Fragment
 {
-    private  View registerFragment;
-    private  Toolbar toolbar;
+    private View registerFragment;
+    private Toolbar toolbar;
     private EditText usernameField, emailField, passwordField, confirmPasswordField;
-    private  Button signUp;
-    private  TextView login;
+    private Button signUp;
+    private TextView login;
     private NoteModel noteModel;
     private FirebaseAuth auth;
-    private  DatabaseReference databaseReference;
+    private DatabaseReference databaseReference;
+    private StorageReference storageReference;
+    private List<String> imageList = new ArrayList<> ();
     private AppDataBase db;
     private ProgressDialog dialog;
     private String noteId;
@@ -180,11 +192,16 @@ public class registerFragment extends Fragment
                 {
                     String uid = task.getResult ().getUser ().getUid ();
                     uploadUserDate ( uid,username );
-
-                    if(noteModel != null)
-                        uploadNote ( uid );
+                    String backup = requireActivity ().getIntent ().getStringExtra ( "backup" );
+                    if(backup != null)
+                        onBack ();
                     else
-                        exportNote(noteId,uid);
+                    {
+                        if(noteModel != null)
+                            checkPhoto ( task.getResult ().getUser () );
+                        else
+                            exportNote(noteId);
+                    }
                 }
                 else
                 {
@@ -194,9 +211,90 @@ public class registerFragment extends Fragment
         } );
     }
 
+    private void checkPhoto(FirebaseUser user)
+    {
+        String modelImage = noteModel.getImageUrl ();
+
+        if(!modelImage.isEmpty ()) {
+            String[] Images = modelImage.split ( "#" );
+            uploadToStorage (Images,1,user);
+        }else
+            uploadNote ( noteModel,user.getUid () );
+    }
+
+    private void uploadToStorage(final String[] images, final int i, final FirebaseUser user) {
+        Uri imageUri = Uri.parse ( images[ i ] );
+        dialog.show ();
+        storageReference = FirebaseStorage.getInstance ().getReference ().child ( "note Image/" ).child ( imageUri.getLastPathSegment () );
+        UploadTask uploadTask = storageReference.putFile ( imageUri );
+        Task<Uri> task = uploadTask.continueWithTask ( new Continuation<UploadTask.TaskSnapshot, Task<Uri>> () {
+            @Override
+            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                return storageReference.getDownloadUrl ();
+            }
+        } ).addOnCompleteListener ( new OnCompleteListener<Uri> () {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                String imageUrl = task.getResult ().toString ();
+                imageList.add ( imageUrl );
+                if(i<images.length-1){
+                    uploadToStorage (images,i+1,user);
+                }else
+                    uploadNote ( noteModel,user.getUid () );
+            }
+        } );
+    }
+
+    private void uploadNote(final NoteModel noteModel, final String uid)
+    {
+        final String noteId;
+
+        if(noteModel.getNote_id () != null)
+            noteId = noteModel.getNote_id ();
+        else
+            noteId = databaseReference.child ( "notes" ).child ( uid ).push ().getKey ();
+
+        if(noteId != null)
+        {
+            databaseReference.child ( "notes" ).child ( noteId ).setValue ( noteModel ).addOnCompleteListener ( new OnCompleteListener<Void> ()
+            {
+                @Override
+                public void onComplete(@NonNull Task<Void> task)
+                {
+                    if(task.isSuccessful ())
+                    {
+                        databaseReference.child ( "notes" ).child ( noteId ).child ( "id" ).removeValue ();
+                        databaseReference.child ( "notes" ).child ( noteId ).child ( "note_id" ).setValue ( noteId );
+                        if(imageList.size () != 0) {
+                            String image = null;
+                            for (int i = 0; i < imageList.size (); i++) {
+                                image += "#" + imageList.get ( i );
+                            }
+                            databaseReference.child ( "notes" ).child ( noteId ).child ( "imageUrl" ).setValue ( image );
+                            imageList.clear ();
+                        }
+                        databaseReference.child ( "notes" ).child ( noteId ).child ( "online_state" ).setValue ( 1 );
+                        noteModel.setNote_id ( noteId );
+                        noteModel.setOnline_state ( 1 );
+                        new updateNote ().execute ( noteModel );
+                        Intent intent = new Intent ( getContext (), EditNoteActivity.class );
+                        intent.putExtra ( "noteModel", noteModel );
+                        startActivity ( intent );
+                        requireActivity ().finish ();
+                    }else
+                    {
+                        Toast.makeText ( getContext (), "12", Toast.LENGTH_SHORT ).show ();
+                        dialog.dismiss ();
+                    }
+                }
+            } );
+        }
+    }
+
     private void onBack()
     {
         requireActivity ().onBackPressed ();
+        requireActivity ().finish ();
     }
 
     private void uploadUserDate(String uid, String username)
@@ -225,10 +323,12 @@ public class registerFragment extends Fragment
                     {
                         databaseReference.child ( "notes" ).child ( noteId ).child ( "id" ).removeValue ();
                         databaseReference.child ( "notes" ).child ( noteId ).child ( "note_id" ).setValue ( noteId );
-                        Intent intent = new Intent ( requireActivity (), MainActivity.class );
-                        intent.putExtra ( "noteModel",noteModel );
-                        intent.putExtra ( "noteId",noteId );
-                        requireActivity ().startActivity ( intent );
+                        noteModel.setNote_id ( noteId );
+                        noteModel.setOnline_state ( 1 );
+                        new updateNote ().execute ( noteModel );
+                        Intent intent = new Intent ( getContext (), EditNoteActivity.class );
+                        intent.putExtra ( "noteModel", noteModel );
+                        startActivity ( intent );
                         requireActivity ().finish ();
                     }else
                     {
@@ -240,7 +340,22 @@ public class registerFragment extends Fragment
         }
     }
 
-    private void exportNote(final String noteId, String uid)
+    class updateNote extends AsyncTask<NoteModel,Void,Void>
+    {
+        @Override
+        protected Void doInBackground(NoteModel... noteModels)
+        {
+            db.Dao ().UpdateNote ( noteModels[0] );
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute ( aVoid );
+        }
+    }
+
+    private void exportNote(final String noteId)
     {
         databaseReference.child ( "notes" ).child ( noteId ).addValueEventListener ( new ValueEventListener ()
         {
@@ -248,11 +363,15 @@ public class registerFragment extends Fragment
             public void onDataChange(@NonNull DataSnapshot snapshot)
             {
                 noteModel = snapshot.getValue (NoteModel.class);
-                new Insert ().execute ( noteModel );
                 Intent intent = new Intent ( getContext (), MainActivity.class );
-                intent.putExtra ( "noteModel",noteModel );
-                intent.putExtra ( "noteId",noteId );
-                requireActivity ().startActivity ( intent );
+                if(noteModel != null)
+                {
+                    new Insert ().execute ( noteModel );
+                    intent.putExtra ( "export", noteModel );
+                }
+                else
+                    Toast.makeText ( getContext (), "id not found", Toast.LENGTH_SHORT ).show ();
+                startActivity ( intent );
                 requireActivity ().finish ();
             }
 

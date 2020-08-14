@@ -9,13 +9,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
-import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.youssef.noteapp.R;
-import com.youssef.noteapp.models.NoteModel;
 import com.youssef.noteapp.ui.WirteNewNote.WriteNewNoteActivity;
-import com.youssef.noteapp.ui.fragments.EditNoteFragment;
 import com.youssef.noteapp.ui.fragments.HomeFragment;
 
 import java.io.File;

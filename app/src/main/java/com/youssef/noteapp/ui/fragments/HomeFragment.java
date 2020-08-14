@@ -1,12 +1,9 @@
 package com.youssef.noteapp.ui.fragments;
 
-import android.app.DownloadManager;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -15,14 +12,10 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
 import android.os.Environment;
-import android.os.Parcelable;
-import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -48,23 +41,20 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 import com.youssef.noteapp.R;
 import com.youssef.noteapp.data.local.AppDataBase;
 import com.youssef.noteapp.models.NoteModel;
+import com.youssef.noteapp.ui.CustomDialogClass;
+import com.youssef.noteapp.ui.EditNote.EditNoteActivity;
 import com.youssef.noteapp.ui.Login.LoginActivity;
-import com.youssef.noteapp.ui.main.MainActivity;
 
+import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
-import java.nio.channels.FileChannel;
-import java.text.SimpleDateFormat;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -80,10 +70,13 @@ public class HomeFragment extends Fragment {
     private AppDataBase db;
     private List<NoteModel> noteModels;
     private List<String> imageList = new ArrayList<>();
+    private List<NoteModel> restoreNotes = new ArrayList<> ();
     private DatabaseReference databaseReference;
     private StorageReference storageReference;
     private String uid;
-    private String image;
+    private String[] images;
+    String imageUri;
+    int c;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -94,7 +87,6 @@ public class HomeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         return view=inflater.inflate(R.layout.fragment_home, container, false);
     }
 
@@ -102,27 +94,14 @@ public class HomeFragment extends Fragment {
     public void onStart()
     {
         super.onStart ();
-
+        NoteModel noteModel = (NoteModel) requireActivity ().getIntent ().getSerializableExtra ( "export" );
+        if(noteModel != null)
+        {
+            preparingImagesToSave ( noteModel );
+            requireActivity ().getIntent ().removeExtra ( "export" );
+        }
         InitData();
         initFirebase();
-        Intent i = requireActivity ().getIntent ();
-        if( i != null)
-        {
-            NoteModel noteModel = (NoteModel) i.getSerializableExtra ( "noteModel" );
-            String noteId = i.getStringExtra ( "noteId" );
-            if( noteModel != null && noteId != null)
-            {
-                noteModel.setOnline_state ( 1 );
-                new updateNote ().execute ( noteModel );
-                if(noteModel.getNote_id () == null)
-                {
-                    Toast.makeText ( context, "noteId", Toast.LENGTH_SHORT ).show ();
-                    noteModel.setNote_id ( noteId );
-                    new updateNote ().execute ( noteModel );
-                    openEditNote ( noteModel );
-                }
-            }
-        }
 
         FloatingActionButton floatingActionButton = requireActivity ().findViewById ( R.id.floatingActionButton );
         floatingActionButton.setVisibility ( View.VISIBLE );
@@ -144,8 +123,6 @@ public class HomeFragment extends Fragment {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute ( aVoid );
-            Toast.makeText ( context, "222", Toast.LENGTH_SHORT ).show ();
-            Toast.makeText ( context, "11111111", Toast.LENGTH_SHORT ).show ();
         }
     }
 
@@ -259,8 +236,7 @@ public class HomeFragment extends Fragment {
             {
                 if(uid != null)
                 {
-                    int i = 0;
-                    preparingImagesTOBackup (i);
+                    preparingImagesTOBackup (0);
                 }
                 else
                     {
@@ -283,16 +259,150 @@ public class HomeFragment extends Fragment {
                 else
                 {
                     Intent intent = new Intent ( getContext (), LoginActivity.class );
-                    intent.putExtra ( "backup", "backup" );
+                    intent.putExtra ( "backup", "restore" );
                     startActivity ( intent );
                 }
             }
         } );
     }
 
+    class checkRestoreNote extends AsyncTask<NoteModel,Void,NoteModel>
+    {
+        NoteModel noteModel;
+        @Override
+        protected NoteModel doInBackground(NoteModel... noteModels)
+        {
+            noteModel = noteModels[0];
+            return db.Dao ().checkNoteFound ( noteModel.getNote_id () );
+        }
+
+        @Override
+        protected void onPostExecute(NoteModel noteModels)
+        {
+            super.onPostExecute ( noteModels );
+
+            if(noteModels == null)
+            {
+                new Insert ().execute ( noteModel );
+                restoreNotes.add ( noteModel );
+                if(c == 1)
+                    preparingImagesToSave ( restoreNotes.get ( 0 ) );
+                c = 0;
+            }
+        }
+    }
+
+    private void preparingImagesToSave(NoteModel noteModel)
+    {
+        if(restoreNotes.size () != 0)
+            restoreNotes.remove ( 0 );
+        if(!noteModel.getImageUrl ().isEmpty ())
+        {
+            images = noteModel.getImageUrl ().split ( "#" );
+
+            new DownloadFile (1).execute ( images[1],noteModel.getNote_id ());
+        }else
+            {
+                if(restoreNotes.size () != 0)
+                    preparingImagesToSave ( restoreNotes.get ( 0 ) );
+            }
+    }
+
+    class DownloadFile extends AsyncTask<String,Integer,String> {
+        int a;
+
+        public DownloadFile(int a) {
+            this.a = a;
+        }
+
+        ProgressDialog mProgressDialog = new ProgressDialog(getContext ());// Change Mainactivity.this with your activity name.
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mProgressDialog.setMessage("Downloading");
+            mProgressDialog.setIndeterminate(false);
+            mProgressDialog.setMax(100);
+            mProgressDialog.setCancelable(true);
+            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            mProgressDialog.show();
+        }
+        @Override
+        protected String doInBackground(String... aurl) {
+            int count;
+            String id = null;
+            try {
+                URL url = new URL(aurl[0]);
+                id = aurl[1];
+                URLConnection conexion = url.openConnection();
+                conexion.connect();
+                String name = new Date().toString() + ".jpg";
+
+                int lenghtOfFile = conexion.getContentLength();
+                String PATH = Environment.getExternalStorageDirectory()+"/Note App/Images/";
+                File folder = new File(PATH);
+                if(!folder.exists()){
+                    folder.mkdir();//If there is no folder it will be created.
+                }
+                InputStream input = new BufferedInputStream (url.openStream());
+                OutputStream output = new FileOutputStream(PATH+name);
+                Uri Imageuri=Uri.fromFile (new File(PATH+name));
+                imageUri += "#"+Imageuri;
+                byte data[] = new byte[1024];
+                long total = 0;
+                while ((count = input.read(data)) != -1) {
+                    total += count;
+                    publishProgress ((int)(total*100/lenghtOfFile));
+                    output.write(data, 0, count);
+                }
+                output.flush();
+                output.close();
+                input.close();
+            } catch (Exception e) {}
+            return id;
+        }
+        protected void onProgressUpdate(Integer... progress) {
+            mProgressDialog.setProgress(progress[0]);
+            if(mProgressDialog.getProgress()==mProgressDialog.getMax()){
+                mProgressDialog.dismiss();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String string) {
+            super.onPostExecute ( string );
+            if(a<images.length-1){
+                new DownloadFile (a+1).execute ( images[a+1],string );
+            }else
+                {
+                    new updateImage ().execute ( imageUri,string );
+                    Toast.makeText(getContext (), "File Downloaded", Toast.LENGTH_SHORT).show();
+                    if(restoreNotes.size () != 0)
+                        preparingImagesToSave ( restoreNotes.get ( 0 ) );
+                }
+        }
+    }
+
+    class updateImage extends AsyncTask<String,Void,Void>
+    {
+        String[] v;
+        @Override
+        protected Void doInBackground(String... strings)
+        {
+            v=strings;
+            db.Dao ().updateImage ( strings[0],strings[1] );
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute ( aVoid );
+        }
+    }
+
     private void getMyNotes()
     {
-        final List<NoteModel> noteModels = new ArrayList<> (  );
+        c = 1;
         databaseReference.child ( uid ).addValueEventListener ( new ValueEventListener ()
         {
             @Override
@@ -303,12 +413,9 @@ public class HomeFragment extends Fragment {
                     NoteModel model = dataSnapshot.getValue (NoteModel.class);
                     if(model != null)
                     {
-                        new Insert ().execute ( model );
-                        Toast.makeText ( context, model.getNote_id (), Toast.LENGTH_SHORT ).show ();
-                        noteModels.add ( model );
+                        new checkRestoreNote ().execute ( model );
                     }
                 }
-                preparingImagesToSave ( noteModels,0 );
             }
 
             @Override
@@ -318,80 +425,6 @@ public class HomeFragment extends Fragment {
             }
         } );
 
-    }
-
-    private void preparingImagesToSave(List<NoteModel> noteModel, int item)
-    {
-        NoteModel model = noteModel.get ( item );
-        if(!model.getImageUrl ().isEmpty ()) {
-
-            String[] images = model.getImageUrl ().split ( "#" );
-            model.setImageUrl ( "" );
-            downloadFile ( 1, images, noteModel, item );
-        }else
-            {
-                if(item < noteModel.size ()-1)
-                    preparingImagesToSave ( noteModel,item+1 );
-            }
-
-    }
-
-    public void downloadFile(final int item, final String[] images, final List<NoteModel> noteModels, final int noteItem) {
-        Toast.makeText ( context, String.valueOf ( item ), Toast.LENGTH_SHORT ).show ();
-        final NoteModel model = noteModels.get ( noteItem );
-        Toast.makeText ( context, "mosta"+images[item], Toast.LENGTH_SHORT ).show ();
-        Picasso.get ()
-                .load(images[item])
-                .into(new Target () {
-                          @Override
-                          public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                              try {
-                                  String root = Environment.getExternalStorageDirectory().toString();
-                                  File myDir = new File(root + "/Note App/Images/");
-
-                                  if (!myDir.exists()) {
-                                      myDir.mkdirs();
-                                  }
-
-                                  String name = new Date().toString() + ".jpg";
-                                  myDir = new File(myDir, name);
-                                  FileOutputStream out = new FileOutputStream(myDir);
-                                  bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-                                  Uri imageUri = Uri.parse ( myDir.toString () );
-                                  image=image+ "#"+imageUri;
-                                  Toast.makeText ( context, image, Toast.LENGTH_SHORT ).show ();
-                                  out.flush();
-                                  out.close();
-                                  if(item < images.length-1)
-                                  {
-                                      downloadFile ( item+1,images,noteModels,noteItem );
-                                  }else
-                                      {
-                                          Toast.makeText ( context, "youss"+noteItem, Toast.LENGTH_SHORT ).show ();
-                                          if(noteItem < noteModels.size ()-1)
-                                          {
-                                              model.setImageUrl ( image );
-                                              new updateNote ().execute ( model );
-                                              image = "";
-                                              Toast.makeText ( context,"sss"+model.getImageUrl (), Toast.LENGTH_SHORT ).show ();
-                                              preparingImagesToSave ( noteModels, noteItem + 1 );
-                                          }
-                                      }
-                              } catch(Exception e){
-                                  Toast.makeText ( context, "error", Toast.LENGTH_SHORT ).show ();
-                              }
-                          }
-
-                    @Override
-                    public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-                        Toast.makeText ( context, "failed", Toast.LENGTH_SHORT ).show ();
-                    }
-
-                          @Override
-                          public void onPrepareLoad(Drawable placeHolderDrawable) {
-                          }
-                      }
-                );
     }
 
     class Insert extends AsyncTask<NoteModel, Void, Void>
@@ -426,7 +459,7 @@ public class HomeFragment extends Fragment {
     private void uploadToStorage(final String[] images, int i, final NoteModel model, final int item) {
         final int ii=i;
         Uri imageUri = Uri.parse ( images[ i ] );
-            Toast.makeText ( context, imageUri + "", Toast.LENGTH_SHORT ).show ();
+
             storageReference = FirebaseStorage.getInstance ().getReference ().child ( "note Image/" ).child ( imageUri.getLastPathSegment () );
             UploadTask uploadTask = storageReference.putFile ( imageUri );
             Task<Uri> task = uploadTask.continueWithTask ( new Continuation<UploadTask.TaskSnapshot, Task<Uri>> () {
@@ -438,10 +471,7 @@ public class HomeFragment extends Fragment {
                 @Override
                 public void onComplete(@NonNull Task<Uri> task) {
                     String imageUrl = task.getResult ().toString ();
-                    Toast.makeText ( getContext (), imageUrl + "yyy", Toast.LENGTH_SHORT ).show ();
-                    Toast.makeText ( getContext (), "mmm", Toast.LENGTH_SHORT ).show ();
                     imageList.add ( imageUrl );
-                    Toast.makeText ( getContext (), String.valueOf ( imageList.size () ), Toast.LENGTH_SHORT ).show ();
                     if(ii<images.length-1){
                         uploadToStorage (images,ii+1,model,item);
                     }else
@@ -452,7 +482,6 @@ public class HomeFragment extends Fragment {
 
     private void uploadNote(final NoteModel noteModel, final int item)
     {
-        Toast.makeText ( context, "mostafa", Toast.LENGTH_SHORT ).show ();
         final String noteId;
 
         if(noteModel.getNote_id () != null)
@@ -489,7 +518,7 @@ public class HomeFragment extends Fragment {
                         new GetData ().execute ();
                     }else
                     {
-                        Toast.makeText ( getContext (), "12", Toast.LENGTH_SHORT ).show ();
+                        Toast.makeText ( context, task.getException ().getMessage (), Toast.LENGTH_SHORT ).show ();
                     }
                 }
             } );
@@ -525,7 +554,6 @@ public class HomeFragment extends Fragment {
                     Intent intent = new Intent ( getContext (), LoginActivity.class );
                     intent.putExtra ( "noteId", noteId );
                     startActivity ( intent );
-                    requireActivity ().finish ();
                 }
         }
     }
@@ -564,10 +592,32 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v)
             {
-                new Delete ().execute ( noteModel );
-                new GetData ().execute ();
-                editLinear.setVisibility ( View.GONE );
-                searchLinear.setVisibility ( View.VISIBLE );
+                final CustomDialogClass cdd=new CustomDialogClass (getActivity ());
+                cdd.show();
+                cdd.yes.setOnClickListener ( new View.OnClickListener ()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        new Delete ().execute ( noteModel );
+                        new GetData ().execute ();
+                        editLinear.setVisibility ( View.GONE );
+                        searchLinear.setVisibility ( View.VISIBLE );
+                        cdd.dismiss ();
+                    }
+                } );
+
+                cdd.no.setOnClickListener ( new View.OnClickListener ()
+                {
+                    @Override
+                    public void onClick(View v)
+                    {
+                        editLinear.setVisibility ( View.GONE );
+                        searchLinear.setVisibility ( View.VISIBLE );
+                        cdd.dismiss ();
+                    }
+                } );
+
             }
         } );
 
@@ -686,7 +736,7 @@ public class HomeFragment extends Fragment {
                     searchLinear.setVisibility ( View.GONE );
                     optionsLinear.setVisibility ( View.GONE );
                     onEditClick (noteModel);
-                    return false;
+                    return true;
                 }
             } );
         }
@@ -718,12 +768,9 @@ public class HomeFragment extends Fragment {
 
     private void openEditNote(NoteModel noteModel)
     {
-        EditNoteFragment editNoteFragment = new EditNoteFragment (noteModel);
-        FragmentManager fragmentManager = requireActivity ().getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.Frame, editNoteFragment );
-        fragmentTransaction.addToBackStack ( null );
-        fragmentTransaction.commit();
+        Intent intent = new Intent ( getContext (), EditNoteActivity.class );
+        intent.putExtra ( "noteModel", noteModel );
+        startActivity ( intent );
     }
 
 }

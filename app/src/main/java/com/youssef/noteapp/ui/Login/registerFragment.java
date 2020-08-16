@@ -283,7 +283,7 @@ public class registerFragment extends Fragment
                         requireActivity ().finish ();
                     }else
                     {
-                        Toast.makeText ( getContext (), "12", Toast.LENGTH_SHORT ).show ();
+                        Toast.makeText ( getContext (), task.getException ().getMessage (), Toast.LENGTH_SHORT ).show ();
                         dialog.dismiss ();
                     }
                 }
@@ -332,7 +332,7 @@ public class registerFragment extends Fragment
                         requireActivity ().finish ();
                     }else
                     {
-                        Toast.makeText ( getContext (), "12", Toast.LENGTH_SHORT ).show ();
+                        Toast.makeText ( getContext (), task.getException ().getMessage (), Toast.LENGTH_SHORT ).show ();
                         dialog.dismiss ();
                     }
                 }

@@ -4,7 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.Room;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +16,10 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 import com.youssef.noteapp.R;
+import com.youssef.noteapp.data.local.AppDataBase;
+import com.youssef.noteapp.models.NoteModel;
+import com.youssef.noteapp.ui.CustomDialogClass;
+import com.youssef.noteapp.ui.fragments.HomeFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,8 +33,7 @@ public class AttachmentActivity extends AppCompatActivity
     {
         super.onStart ();
 
-        String images = getIntent ().getStringExtra ( "images" );
-
+        String images = getIntent ().getStringExtra ( "imageUri" );
         if(images != null)
         {
             String[] imageArray = images.split ( "#" );
@@ -48,6 +53,7 @@ public class AttachmentActivity extends AppCompatActivity
         setContentView ( R.layout.activity_attachment );
 
         initRecycler ();
+
     }
 
     private void initRecycler()
@@ -76,13 +82,13 @@ public class AttachmentActivity extends AppCompatActivity
         @Override
         public void onBindViewHolder(@NonNull ImagesAdapter.ImagesHolder holder, final int position)
         {
-            String ImageUri=Images.get(position);
+            final String ImageUri=Images.get(position);
 
             Picasso.get().load(ImageUri).into(holder.imageView);
             holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {
-                    Toast.makeText(getApplicationContext (), "deleted", Toast.LENGTH_SHORT).show();
+
                     return false;
                 }
             });

@@ -27,4 +27,10 @@ public interface Dao {
     NoteModel checkNoteFound(String searchWord);
     @Query ( "UPDATE notes_table SET ImageUrl = :imageUrl WHERE note_id = :noteId" )
     void updateImage(String imageUrl, String noteId);
+    @Query ( "UPDATE notes_table SET id = :id WHERE pointer = :pointer" )
+    void updateId(int id, String pointer);
+    @Query ( "UPDATE notes_table SET pin_state = :pin WHERE id = :id" )
+    void updatePin(int pin, int id);
+    @Query ( "UPDATE notes_table SET pointer = :pointer WHERE id = :id" )
+    void updatePointer(String pointer, int id);
 }

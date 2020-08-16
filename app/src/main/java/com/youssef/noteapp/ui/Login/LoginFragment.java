@@ -155,6 +155,9 @@ public class LoginFragment extends Fragment
         if(user!=null){
             uploading(user);
         }
+        else{
+            Toast.makeText ( context, "please complete login", Toast.LENGTH_SHORT ).show ();
+        }
     }
 
     private void uploading(FirebaseUser user)
@@ -340,7 +343,7 @@ public class LoginFragment extends Fragment
                         requireActivity ().finish ();
                     }else
                         {
-                            Toast.makeText ( getContext (), "12", Toast.LENGTH_SHORT ).show ();
+                            Toast.makeText ( getContext (), task.getException ().getMessage (), Toast.LENGTH_SHORT ).show ();
                             dialog.dismiss ();
                         }
                 }

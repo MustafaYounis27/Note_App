@@ -3,6 +3,7 @@ package com.youssef.noteapp.models;
 import androidx.room.ColumnInfo;
 import androidx.room.Embedded;
 import androidx.room.Entity;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.room.Relation;
 import androidx.room.TypeConverter;
@@ -15,8 +16,10 @@ import java.util.List;
 
 @Entity(tableName = "notes_table")
 public class NoteModel implements Serializable {
-    @PrimaryKey(autoGenerate =true)
+    @PrimaryKey(autoGenerate = true)
     int id;
+    @ColumnInfo(name = "pointer")
+    String pointer;
     @ColumnInfo(name = "Title")
     String Title;
     @ColumnInfo(name = "Subject")
@@ -37,6 +40,8 @@ public class NoteModel implements Serializable {
     int online_state;
     @ColumnInfo(name = "backup_state")
     int backup_state;
+    @ColumnInfo(name = "pin_state")
+    int pin_state;
 
     public NoteModel(String Title, String Subject, String ImageUrl, String VoiceUrl, String Date, String text_color, String background_color) {
         this.Title = Title;
@@ -139,5 +144,21 @@ public class NoteModel implements Serializable {
 
     public void setBackup_state(int backup_state) {
         this.backup_state = backup_state;
+    }
+
+    public int getPin_state() {
+        return pin_state;
+    }
+
+    public void setPin_state(int pin_state) {
+        this.pin_state = pin_state;
+    }
+
+    public void setPointer(String pointer){
+        this.pointer=pointer;
+    }
+
+    public String getPointer(){
+        return pointer;
     }
 }

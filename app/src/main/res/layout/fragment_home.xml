@@ -195,5 +195,6 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         tools:listitem="@layout/notes_items"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        />
 </LinearLayout>

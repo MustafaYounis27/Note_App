@@ -26,8 +26,8 @@ public class CustomDialogClass extends Dialog implements android.view.View.OnCli
         super.onCreate(savedInstanceState);
         requestWindowFeature( Window.FEATURE_NO_TITLE);
         setContentView(R.layout.custom_dialog);
-        yes = (Button) findViewById(R.id.btn_yes);
-        no = (Button) findViewById(R.id.btn_no);
+        yes =  findViewById(R.id.btn_yes);
+        no =  findViewById(R.id.btn_no);
         yes.setOnClickListener(this);
         no.setOnClickListener(this);
 

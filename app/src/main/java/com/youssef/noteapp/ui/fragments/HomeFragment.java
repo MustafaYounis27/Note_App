@@ -63,6 +63,7 @@ public class HomeFragment extends Fragment {
     private Context context;
     private View view, viewInSearch;
     private RecyclerView recyclerView;
+    private RecyclerNotes recyclerNotes;
     private Button deleteButton, pinButton, closeButton, joinButton;
     private LinearLayout editLinear, searchLinear, optionsLinear;
     private EditText searchField;
@@ -379,17 +380,16 @@ public class HomeFragment extends Fragment {
                     Toast.makeText(getContext (), "File Downloaded", Toast.LENGTH_SHORT).show();
                     if(restoreNotes.size () != 0)
                         preparingImagesToSave ( restoreNotes.get ( 0 ) );
+                    imageUri="";
                 }
         }
     }
 
     class updateImage extends AsyncTask<String,Void,Void>
     {
-        String[] v;
         @Override
         protected Void doInBackground(String... strings)
         {
-            v=strings;
             db.Dao ().updateImage ( strings[0],strings[1] );
             return null;
         }
@@ -575,7 +575,7 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    private void onEditClick(final NoteModel noteModel)
+    private void onEditClick(final NoteModel noteModel, final View selectedItem)
     {
         closeButton.setOnClickListener ( new View.OnClickListener ()
         {
@@ -584,6 +584,7 @@ public class HomeFragment extends Fragment {
             {
                 editLinear.setVisibility ( View.GONE );
                 searchLinear.setVisibility ( View.VISIBLE );
+                selectedItem.setVisibility ( View.GONE );
             }
         } );
 
@@ -617,7 +618,7 @@ public class HomeFragment extends Fragment {
                         cdd.dismiss ();
                     }
                 } );
-
+                selectedItem.setVisibility ( View.GONE );
             }
         } );
 
@@ -626,9 +627,74 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v)
             {
+                if(noteModel.getPin_state () == 0) {
+                    noteModel.setPin_state ( 1 );
+                    new updatePin ().execute ( 1, noteModel.getId () );
+                    noteModel.setPointer ( noteModel.getTitle () + noteModel.getId () );
+                    new updatePointer ( noteModel.getId () ).execute ( noteModel.getTitle () + noteModel.getId () );
+                    for (int i = noteModels.size () - 1; i >= 0; i--) {
+                        NoteModel model = noteModels.get ( i );
+                        model.setPointer ( model.getTitle () + model.getId () );
+                        new updatePointer ( model.getId () ).execute ( model.getTitle () + model.getId () );
+                        model.setId ( model.getId () + 1 );
+                        new updateId ( model.getPointer () ).execute ( model.getId () );
 
+                        if (i == 0) {
+                            noteModel.setId ( 1 );
+                            new updateId ( noteModel.getPointer () ).execute ( 1 );
+                        }
+                    }
+                }else{
+                    noteModel.setPin_state ( 0 );
+                    new updatePin ().execute ( 0,noteModel.getId () );
+                }
+                editLinear.setVisibility ( View.GONE );
+                searchLinear.setVisibility ( View.VISIBLE );
+                selectedItem.setVisibility ( View.GONE );
+                new GetData ().execute (  );
             }
         } );
+    }
+
+    class updatePointer extends AsyncTask<String,Void,Void>
+    {
+        int id;
+
+        public updatePointer(int id) {
+            this.id = id;
+        }
+
+        @Override
+        protected Void doInBackground(String... strings)
+        {
+            db.Dao ().updatePointer ( strings[0],id );
+            return null;
+        }
+    }
+
+    class updateId extends AsyncTask<Integer,Void,Void>
+    {
+        String pointer;
+        public updateId(String pointer){
+            this.pointer=pointer;
+        }
+
+        @Override
+        protected Void doInBackground(Integer... integers)
+        {
+            db.Dao ().updateId ( integers[0],pointer );
+            return null;
+        }
+    }
+
+    class updatePin extends AsyncTask<Integer,Void,Void>
+    {
+        @Override
+        protected Void doInBackground(Integer... integers)
+        {
+            db.Dao ().updatePin ( integers[0],integers[1] );
+            return null;
+        }
     }
 
     private void InitViews()
@@ -675,7 +741,7 @@ public class HomeFragment extends Fragment {
         @Override
         protected void onPostExecute(List<NoteModel> noteModels) {
             super.onPostExecute(noteModels);
-            RecyclerNotes recyclerNotes=new RecyclerNotes(noteModels);
+            recyclerNotes = new RecyclerNotes(noteModels);
             recyclerView.setAdapter(recyclerNotes);
         }
     }
@@ -706,7 +772,8 @@ public class HomeFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(@NonNull NotesViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull final NotesViewHolder holder, final int position)
+        {
             final NoteModel noteModel=noteModels.get(position);
             holder.Title.setText(noteModel.getTitle());
             holder.Subjec.setText(noteModel.getSubject());
@@ -715,6 +782,8 @@ public class HomeFragment extends Fragment {
                 holder.onlineIcon.setVisibility ( View.VISIBLE );
             if(noteModel.getBackup_state () == 1)
                 holder.backupIcon.setVisibility ( View.VISIBLE );
+            if(noteModel.getPin_state () == 1)
+                holder.pinIcon.setVisibility ( View.VISIBLE );
             if(!noteModel.getImageUrl ().isEmpty ())
                 holder.attachmentIcon.setVisibility ( View.VISIBLE );
             if(!noteModel.getBackground_color().equals("#fff")){
@@ -723,7 +792,13 @@ public class HomeFragment extends Fragment {
             holder.editNote.setOnClickListener ( new View.OnClickListener () {
                 @Override
                 public void onClick(View v) {
-                    openEditNote(noteModel);
+                    if(holder.selectedItem.getVisibility () == View.VISIBLE)
+                    {
+                        holder.selectedItem.setVisibility ( View.GONE );
+                        editLinear.setVisibility ( View.GONE );
+                        searchLinear.setVisibility ( View.VISIBLE );
+                    }else
+                        openEditNote(noteModel);
                 }
             } );
 
@@ -735,7 +810,12 @@ public class HomeFragment extends Fragment {
                     editLinear.setVisibility ( View.VISIBLE );
                     searchLinear.setVisibility ( View.GONE );
                     optionsLinear.setVisibility ( View.GONE );
-                    onEditClick (noteModel);
+                    holder.selectedItem.setVisibility ( View.VISIBLE );
+                    if(noteModel.getPin_state () == 1)
+                        pinButton.setText ( "unpin" );
+                    else
+                        pinButton.setText ( "pin" );
+                    onEditClick (noteModel,holder.selectedItem);
                     return true;
                 }
             } );
@@ -749,19 +829,21 @@ public class HomeFragment extends Fragment {
 
         class NotesViewHolder extends RecyclerView.ViewHolder{
             TextView Title,Subjec,Date;
-            View background;
+            View background, selectedItem;
             LinearLayout editNote;
-            ImageView onlineIcon, backupIcon, attachmentIcon;
+            ImageView onlineIcon, backupIcon, attachmentIcon, pinIcon;
            public NotesViewHolder(@NonNull View itemView) {
                super(itemView);
                Title=itemView.findViewById(R.id.note_title);
                Subjec=itemView.findViewById(R.id.note_subject);
                Date=itemView.findViewById(R.id.Date);
                background=itemView.findViewById(R.id.HomeBackGroundColor);
+               selectedItem=itemView.findViewById ( R.id.selected_item );
                editNote=itemView.findViewById ( R.id.edit_note );
                onlineIcon=itemView.findViewById ( R.id.online_state );
                backupIcon=itemView.findViewById ( R.id.backup_state );
                attachmentIcon=itemView.findViewById ( R.id.attachment_icon );
+               pinIcon=itemView.findViewById ( R.id.pin_state );
            }
        }
     }

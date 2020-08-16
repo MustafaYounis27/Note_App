@@ -116,28 +116,6 @@ public class WriteNewNoteActivity extends AppCompatActivity {
         });
     }
 
-    class GetData extends AsyncTask<Void, Void, NoteModel> {
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            dialog.show();
-        }
-
-        @Override
-        protected NoteModel doInBackground(Void... voids) {
-            noteModel = db.Dao().GetOneNotes(1);
-            return noteModel;
-        }
-
-        @Override
-        protected void onPostExecute(NoteModel noteModel) {
-            super.onPostExecute(noteModel);
-            TitleField.setText(noteModel.getTitle());
-            SubjectField.setText(noteModel.getSubject());
-            dialog.dismiss();
-        }
-    }
-
     class Insert extends AsyncTask<NoteModel, Void, Void> {
         @Override
         protected void onPreExecute() {
@@ -232,12 +210,6 @@ public class WriteNewNoteActivity extends AppCompatActivity {
             }
             NoteModel noteModel = new NoteModel(title, subject, SaveImagesString, "", currentDateandTime, text_color, backgroun_color);
             new Insert().execute(noteModel);
-            /*for (int i = 0; i < SaveImagesString.size(); i++) {
-                editor.putString(title + i, SaveImagesString.get(i));
-                editor.commit();
-            }*/
-            //Toast.makeText(getApplicationContext(), "saved2", Toast.LENGTH_SHORT).show();
-            //Toast.makeText(getApplicationContext(), ImagesUri.size()+"", Toast.LENGTH_SHORT).show();
         }
         super.onBackPressed();
     }
@@ -402,30 +374,6 @@ public class WriteNewNoteActivity extends AppCompatActivity {
     }
 
     private void SaveAsPdf(String PdfName, String Subject) {
-        /*//create object of Document class
-        Document document=new Document();
-        //pdf file name
-        String MFileName=PdfName;
-        //pdf File
-        String MFilePath= Environment.getExternalStorageDirectory()+"/Note App/pdf/"+MFileName+".pdf";
-        try {
-            //Create Instance Of Pdf Writer Class
-            PdfWriter.getInstance(document,new FileOutputStream(MFilePath));
-            //open the Document for writing
-            document.open();
-            // add author
-            document.addAuthor("youssef");
-            //add title
-            document.addTitle(PdfName);
-            //add praghraph
-            document.add(new Paragraph(Subject));
-            //close document
-            document.close();
-            Toast.makeText(this, PdfName+".pdf is saved", Toast.LENGTH_SHORT).show();
-        }
-        catch (Exception e){
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-        }*/
         Document document = new Document();
         //pdf file name
         String MFileName = PdfName;
@@ -489,7 +437,6 @@ public class WriteNewNoteActivity extends AppCompatActivity {
         intent.setType("image/*"); //allows any image file type. Change * to specific extension to limit it
 //**The following line is the important one!
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-        Toast.makeText(this, ImagesUri.size()+"", Toast.LENGTH_SHORT).show();
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), 505); //SELECT_PICTURES is simply a global int used to check the calling intent in onActivityResult
     }
 
@@ -523,7 +470,6 @@ public class WriteNewNoteActivity extends AppCompatActivity {
 
     private void SaveImageInMyFile(List<Uri> imagesUri) {
         for (int i = 0; i < imagesUri.size(); i++) {
-            Toast.makeText(this, imagesUri.get(i) + "cccc", Toast.LENGTH_SHORT).show();
             getRealPathFromURI(imagesUri.get(i), i);
         }
     }
@@ -585,53 +531,9 @@ public class WriteNewNoteActivity extends AppCompatActivity {
         return expFile;
     }
 
- /*   @Override
-    protected void onPause() {
-        String title = TitleField.getText().toString();
-        String subject = SubjectField.getText().toString();
-        if (!title.isEmpty() && !subject.isEmpty()) {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM hh:mm aa", Locale.getDefault());
-            String currentDateandTime = sdf.format(new Date());
-            if (text_color == null) {
-                text_color = "#000";
-            }
-            if (backgroun_color == null) {
-                backgroun_color = "#fff";
-            }
-            if (SaveImagesString.size() != 0) {
-                NoteModel noteModel = new NoteModel(title, subject, "1", "", currentDateandTime, text_color, backgroun_color);
-            } else {
-                NoteModel noteModel = new NoteModel(title, subject, "", "", currentDateandTime, text_color, backgroun_color);
-            }
-            new Insert().execute(noteModel);
-            for (int i = 0; i < SaveImagesString.size(); i++) {
-                editor.putString(title + i, SaveImagesString.get(i));
-                editor.commit();
-            }
-            Toast.makeText(this, "saved", Toast.LENGTH_SHORT).show();
-        }
-        super.onPause();
-    }*/
-
     private void IntialSharedPreferences() {
         preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         editor = preferences.edit();
     }
-    /* public void createPdf(String dest) throws IOException, DocumentException {
-        Document document = new Document();
-        PdfWriter.getInstance(document, new FileOutputStream(dest));
-        document.open();
-        Font f = FontFactory.getFont(FONT, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
-        PdfPTable table = new PdfPTable(1);
-        Phrase phrase = new Phrase();
-        Chunk chunk = new Chunk("يوسف هشام رررررررررر-test value");
-        phrase.add(chunk);
-        phrase.add(new Chunk(ARABIC, f));
-        PdfPCell cell = new PdfPCell(phrase);
-        cell.setUseDescender(true);
-        cell.setRunDirection(PdfWriter.RUN_DIRECTION_RTL);
-        table.addCell(cell);
-        document.add(table);
-        document.close();
-    }*/
+
 }

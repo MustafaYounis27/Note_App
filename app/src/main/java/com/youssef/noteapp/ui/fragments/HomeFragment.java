@@ -1,8 +1,10 @@
 package com.youssef.noteapp.ui.fragments;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -11,6 +13,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
@@ -255,7 +258,18 @@ public class HomeFragment extends Fragment {
             {
                 if(uid != null)
                 {
-                    getMyNotes();
+                    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+                        //system os > marshmello check if permation is enable or not
+                        if (ContextCompat.checkSelfPermission( context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+                            //permission not enable
+                            String[] permission = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
+                            requestPermissions(permission, 2);
+                        } else {
+                            getMyNotes();
+                        }
+                    } else {
+                        getMyNotes();
+                    }
                 }
                 else
                 {
@@ -265,6 +279,18 @@ public class HomeFragment extends Fragment {
                 }
             }
         } );
+    }
+
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 2) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getMyNotes ();
+            } else {
+                Toast.makeText(getContext (), "error permissions...", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     class checkRestoreNote extends AsyncTask<NoteModel,Void,NoteModel>

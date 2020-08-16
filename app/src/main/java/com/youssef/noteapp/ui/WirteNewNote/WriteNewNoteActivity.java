@@ -418,8 +418,8 @@ public class WriteNewNoteActivity extends AppCompatActivity {
                 .startChooser ();
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == Storage_Code) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -427,17 +427,38 @@ public class WriteNewNoteActivity extends AppCompatActivity {
                 String Subject = SubjectField.getText().toString();
                 SaveAsPdf(name, Subject);
             } else {
-                Toast.makeText(getApplicationContext(), "error permissions...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "error permissions...", Toast.LENGTH_SHORT).show();
+            }
+        }else if (requestCode == 1)
+        {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("image/*");
+                startActivityForResult(Intent.createChooser(intent, "Select Picture"), 505); //SELECT_PICTURES is simply a global int used to check the calling intent in onActivityResult
+            } else {
+                Toast.makeText(this, "error permissions...", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    public void Attatchment() {
+    public void Attatchment()
+    {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*"); //allows any image file type. Change * to specific extension to limit it
-//**The following line is the important one!
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), 505); //SELECT_PICTURES is simply a global int used to check the calling intent in onActivityResult
+//**The following line is the important one!
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+            //system os > marshmello check if permation is enable or not
+            if (ContextCompat.checkSelfPermission( this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+                //permission not enable
+                String[] permission = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
+                requestPermissions(permission, 1);
+            } else {
+                startActivityForResult(Intent.createChooser(intent, "Select Picture"), 505); //SELECT_PICTURES is simply a global int used to check the calling intent in onActivityResult
+            }
+        } else {
+            startActivityForResult(Intent.createChooser(intent, "Select Picture"), 505); //SELECT_PICTURES is simply a global int used to check the calling intent in onActivityResult
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)

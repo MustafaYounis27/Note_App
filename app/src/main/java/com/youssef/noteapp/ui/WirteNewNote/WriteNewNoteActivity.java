@@ -373,7 +373,32 @@ public class WriteNewNoteActivity extends AppCompatActivity {
         }
     }
 
-    private void SaveAsPdf(String PdfName, String Subject) {
+    private void SaveAsPdf(String PdfName, String Subject)
+    {
+        /*//create object of Document class
+        Document document=new Document();
+        //pdf file name
+        String MFileName=PdfName;
+        //pdf File
+        String MFilePath= Environment.getExternalStorageDirectory()+"/Note App/pdf/"+MFileName+".pdf";
+        try {
+            //Create Instance Of Pdf Writer Class
+            PdfWriter.getInstance(document,new FileOutputStream(MFilePath));
+            //open the Document for writing
+            document.open();
+            // add author
+            document.addAuthor("youssef");
+            //add title
+            document.addTitle(PdfName);
+            //add praghraph
+            document.add(new Paragraph(Subject));
+            //close document
+            document.close();
+            Toast.makeText(this, PdfName+".pdf is saved", Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e){
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+        }*/
         Document document = new Document();
         //pdf file name
         String MFileName = PdfName;
@@ -381,7 +406,7 @@ public class WriteNewNoteActivity extends AppCompatActivity {
         String MFilePath = Environment.getExternalStorageDirectory() + "/Note App/pdf/" + MFileName + ".pdf";
         Uri pdfuri=Uri.parse (new File(Environment.getExternalStorageDirectory() + "/Note App/pdf/" + PdfName + ".pdf").toString ());
         try {
-            BaseFont bf = BaseFont.createFont("res/font/notonaskharabic_regular.ttf",
+            BaseFont bf = BaseFont.createFont("res/font/cairo_extralight.ttf",
                     BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
             Font font = new Font(bf, 12);
             //Create Instance Of Pdf Writer Class
@@ -389,7 +414,7 @@ public class WriteNewNoteActivity extends AppCompatActivity {
             //open the Document for writing
             document.open();
             PdfPTable table = new PdfPTable(1);
-            table.setRunDirection(PdfWriter.RUN_DIRECTION_RTL);
+           // table.setRunDirection(PdfWriter.RUN_DIRECTION_RTL);
             //  PdfPCell cell = new PdfPCell();
             // cell.setBorder(Rectangle.NO_BORDER);
             Paragraph p;
@@ -443,8 +468,7 @@ public class WriteNewNoteActivity extends AppCompatActivity {
 
     public void Attatchment()
     {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("image/*"); //allows any image file type. Change * to specific extension to limit it
+        Intent intent = new Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
 //**The following line is the important one!
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
@@ -485,6 +509,7 @@ public class WriteNewNoteActivity extends AppCompatActivity {
                     ImagesUri.add(data.getData());
                 }
                 SaveImageInMyFile(ImagesUri);
+                ImagesUri.clear ();
             }
         }
     }

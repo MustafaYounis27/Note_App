@@ -525,7 +525,6 @@ public class HomeFragment extends Fragment {
                     if(task.isSuccessful ())
                     {
                         databaseReference.child ( uid ).child ( noteId ).child ( "id" ).removeValue ();
-                        databaseReference.child ( uid ).child ( noteId ).child ( "note_id" ).setValue ( noteId );
                         String image = null;
                         for(int i = 0 ; i < imageList.size () ; i++)
                         {

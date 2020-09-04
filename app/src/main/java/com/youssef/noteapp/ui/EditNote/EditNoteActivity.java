@@ -279,12 +279,12 @@ public class EditNoteActivity extends AppCompatActivity
         TitleField = findViewById(R.id.TitleField);
         TitleField.setText ( noteModel.getTitle () );
         SubjectField = findViewById(R.id.SubjectField);
-        SubjectField.setText ( noteModel.getImageUrl () );
+        SubjectField.setText ( noteModel.getSubject () );
         toolbar = findViewById(R.id.toolbarId);
         linearLayout = findViewById(R.id.LinearColor);
         BackGrounLinear = findViewById(R.id.LinearBackgroundColor);
         Attachment = findViewById(R.id.Attachments);
-        if(noteModel.getImageUrl () != null)
+        if(!noteModel.getImageUrl ().isEmpty ())
             Attachment.setVisibility ( View.VISIBLE );
         Attachment.setOnClickListener(new View.OnClickListener()
         {
@@ -472,6 +472,30 @@ public class EditNoteActivity extends AppCompatActivity
 
     private void SaveAsPdf(String PdfName, String Subject)
     {
+        /*//create object of Document class
+        Document document=new Document();
+        //pdf file name
+        String MFileName=PdfName;
+        //pdf File
+        String MFilePath= Environment.getExternalStorageDirectory()+"/Note App/pdf/"+MFileName+".pdf";
+        try {
+            //Create Instance Of Pdf Writer Class
+            PdfWriter.getInstance(document,new FileOutputStream(MFilePath));
+            //open the Document for writing
+            document.open();
+            // add author
+            document.addAuthor("youssef");
+            //add title
+            document.addTitle(PdfName);
+            //add praghraph
+            document.add(new Paragraph(Subject));
+            //close document
+            document.close();
+            Toast.makeText(this, PdfName+".pdf is saved", Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e){
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+        }*/
         Document document = new Document ();
         //pdf file name
         //pdf File
@@ -533,15 +557,14 @@ public class EditNoteActivity extends AppCompatActivity
 
     public void Attatchment()
     {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("image/*"); //allows any image file type. Change * to specific extension to limit it
+        Intent intent = new Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
 //**The following line is the important one!
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
             //system os > marshmello check if permation is enable or not
             if (ContextCompat.checkSelfPermission( this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
                 //permission not enable
-                String[] permission = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
+                String[] permission = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_MEDIA_LOCATION};
                 requestPermissions(permission, 1);
             } else {
                 startActivityForResult(Intent.createChooser(intent, "Select Picture"), 505); //SELECT_PICTURES is simply a global int used to check the calling intent in onActivityResult
@@ -576,6 +599,7 @@ public class EditNoteActivity extends AppCompatActivity
                     ImagesUri.add(data.getData());
                 }
                 SaveImageInMyFile(ImagesUri);
+                ImagesUri.clear ();
             }
         }
     }
@@ -596,9 +620,8 @@ public class EditNoteActivity extends AppCompatActivity
         } else {
             cursor.moveToFirst();
             int idx = cursor.getColumnIndex( MediaStore.Images.ImageColumns.DATA);
-            result = cursor.getString(idx);
+            result = cursor.getString ( idx );
             cursor.close();
-
         }
         String saveto = Environment.getExternalStorageDirectory() + "/Note App/Images/";
         File savetofile = new File(saveto);

@@ -3,6 +3,7 @@ package com.youssef.noteapp.ui.Attachment;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
@@ -33,13 +34,12 @@ public class AttachmentActivity extends AppCompatActivity
     {
         super.onStart ();
 
-        String images = getIntent ().getStringExtra ( "imageUri" );
+        String images = getIntent ().getStringExtra ( "images" );
         if(images != null)
         {
             String[] imageArray = images.split ( "#" );
-            for (int i = 1; i < imageArray.length; i++) {
+            for (int i = 1; i < imageArray.length; i++)
                 imageList.add ( imageArray[ i ] );
-            }
         }else
             {
                 Toast.makeText ( this, "Attachment is empty", Toast.LENGTH_SHORT ).show ();
@@ -63,6 +63,7 @@ public class AttachmentActivity extends AppCompatActivity
         ImagesAdapter imagesAdapter=new ImagesAdapter (imageList);
         recyclerView.setAdapter(imagesAdapter);
     }
+
     class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImagesHolder>
     {
         List<String> Images;
@@ -98,7 +99,6 @@ public class AttachmentActivity extends AppCompatActivity
         public int getItemCount() {
             return Images.size();
         }
-
 
         class ImagesHolder extends RecyclerView.ViewHolder
         {

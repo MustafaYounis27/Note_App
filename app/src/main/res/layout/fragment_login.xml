@@ -95,12 +95,23 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Sign up"
-            android:textSize="20dp"
+            android:textSize="20sp"
             android:textColor="#EF5D5D"
             android:textStyle="bold"
             android:layout_marginLeft="10dp"
             />
 
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/forget_password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="forget password ?"
+        android:gravity="center"
+        android:layout_margin="10dp"
+        android:textSize="18sp"
+        android:textColor="#EF5D5D"
+        />
 
 </LinearLayout>

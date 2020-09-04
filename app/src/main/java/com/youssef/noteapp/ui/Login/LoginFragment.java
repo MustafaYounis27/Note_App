@@ -39,6 +39,8 @@ import com.google.firebase.storage.UploadTask;
 import com.youssef.noteapp.R;
 import com.youssef.noteapp.data.local.AppDataBase;
 import com.youssef.noteapp.models.NoteModel;
+import com.youssef.noteapp.ui.CustomDialogClass;
+import com.youssef.noteapp.ui.CustomLoginClass;
 import com.youssef.noteapp.ui.EditNote.EditNoteActivity;
 import com.youssef.noteapp.ui.main.MainActivity;
 
@@ -51,7 +53,7 @@ public class LoginFragment extends Fragment
     private Toolbar toolbar;
     private EditText emailField, passwordField;
     private Button login;
-    private TextView signUp;
+    private TextView signUp, forgetPassword;
     private FirebaseAuth auth;
     private DatabaseReference databaseReference;
     private StorageReference storageReference;
@@ -370,6 +372,28 @@ public class LoginFragment extends Fragment
     {
         emailField=loginFragment.findViewById ( R.id.email_field );
         passwordField=loginFragment.findViewById ( R.id.password_field );
+        forgetPassword=loginFragment.findViewById ( R.id.forget_password );
+        forgetPassword.setOnClickListener ( new View.OnClickListener () {
+            @Override
+            public void onClick(View v) {
+                final CustomLoginClass customLoginClass = new CustomLoginClass ( getActivity () );
+                customLoginClass.show ();
+                customLoginClass.yes.setOnClickListener ( new View.OnClickListener () {
+                    @Override
+                    public void onClick(View v) {
+                        String email = customLoginClass.emailField.getText ().toString ();
+                        if(email.isEmpty ()){
+                            Toast.makeText ( getContext (), "please enter your email", Toast.LENGTH_SHORT ).show ();
+                            customLoginClass.emailField.requestFocus ();
+                            return;
+                        }
+                        resetPassword(email);
+                        customLoginClass.dismiss ();
+                    }
+                } );
+
+            }
+        } );
         login=loginFragment.findViewById ( R.id.login );
         signUp=loginFragment.findViewById ( R.id.sign_up );
         toolbar=loginFragment.findViewById ( R.id.toolbarId );
@@ -377,5 +401,18 @@ public class LoginFragment extends Fragment
             signUp.setVisibility ( View.GONE );
         else
             signUp.setVisibility ( View.VISIBLE );
+    }
+
+    private void resetPassword(String email)
+    {
+        auth.sendPasswordResetEmail ( email )
+                .addOnCompleteListener ( new OnCompleteListener<Void> () {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if(task.isSuccessful ()){
+                            Toast.makeText ( context, "sent, please check your email", Toast.LENGTH_SHORT ).show ();
+                        }
+                    }
+                } );
     }
 }

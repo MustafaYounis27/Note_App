@@ -6,17 +6,17 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/cover"
         android:label="@string/app_name"
         android:requestLegacyExternalStorage="true"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
+        android:roundIcon="@drawable/cover"
+        android:supportsRtl="false"
         android:theme="@style/AppTheme">
-        <activity android:name=".ui.EditNote.EditNoteActivity"></activity>
-        <activity android:name=".ui.Attachment.AttachmentActivity" />
-        <activity android:name=".ui.Login.LoginActivity" />
-        <activity android:name=".ui.WirteNewNote.WriteNewNoteActivity" />
-        <activity android:name=".ui.main.MainActivity">
+        <activity android:name=".ui.EditNote.EditNoteActivity" android:screenOrientation="portrait" />
+        <activity android:name=".ui.Attachment.AttachmentActivity" android:screenOrientation="portrait" />
+        <activity android:name=".ui.Login.LoginActivity" android:screenOrientation="portrait" />
+        <activity android:name=".ui.WirteNewNote.WriteNewNoteActivity" android:screenOrientation="portrait" />
+        <activity android:name=".ui.main.MainActivity" android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

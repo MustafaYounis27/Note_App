@@ -13,14 +13,17 @@
         android:orientation="vertical"
         >
 
-        <TextView
-            android:id="@+id/txt_dia"
-            android:layout_width="wrap_content"
+        <EditText
+            android:id="@+id/email_field"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_margin="10dp"
-            android:text="Do you realy want to delete ?"
-            android:textColor="@android:color/white"
+            android:background="@drawable/solid_white_backgroung"
+            android:inputType="textEmailAddress"
+            android:padding="10dp"
+            android:hint="enter your email"
+            android:textColor="@android:color/black"
             android:textSize="20sp"
             android:textStyle="bold"
             />
@@ -39,7 +42,7 @@
                 android:background="@drawable/button_background"
                 android:backgroundTint="@android:color/white"
                 android:clickable="true"
-                android:text="Yes"
+                android:text="ok"
                 android:textColor="#EF5D5D"
                 android:textStyle="bold"
                 />
@@ -52,7 +55,7 @@
                 android:background="@drawable/button_background"
                 android:backgroundTint="@android:color/white"
                 android:clickable="true"
-                android:text="No"
+                android:text="cancel"
                 android:textColor="#EF5D5D"
                 android:textStyle="bold"
                 />

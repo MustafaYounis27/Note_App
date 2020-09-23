@@ -13,6 +13,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
@@ -22,6 +23,7 @@ import android.os.Environment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -44,10 +46,11 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.youssef.noteapp.Dialogs.CustomOpenClass;
 import com.youssef.noteapp.R;
 import com.youssef.noteapp.data.local.AppDataBase;
 import com.youssef.noteapp.models.NoteModel;
-import com.youssef.noteapp.ui.CustomDialogClass;
+import com.youssef.noteapp.Dialogs.CustomDialogClass;
 import com.youssef.noteapp.ui.EditNote.EditNoteActivity;
 import com.youssef.noteapp.ui.Login.LoginActivity;
 
@@ -64,23 +67,28 @@ import java.util.List;
 
 public class HomeFragment extends Fragment {
     private Context context;
-    private View view, viewInSearch;
+    private View view;
     private RecyclerView recyclerView;
     private RecyclerNotes recyclerNotes;
-    private Button deleteButton, pinButton, closeButton, joinButton;
-    private LinearLayout editLinear, searchLinear, optionsLinear;
+    private Button deleteButton, pinButton, closeButton;
+    private LinearLayout editLinear, optionsLinear;
+    private androidx.appcompat.widget.Toolbar searchLinear;
     private EditText searchField;
-    private ImageView searchIcon, closeSearch, backupIcon, restoreIcon, menuIcon, closeOptions;
+    private TextView joinText;
+    private ImageView searchIcon, closeSearch;
     private AppDataBase db;
     private List<NoteModel> noteModels;
     private List<String> imageList = new ArrayList<>();
     private List<NoteModel> restoreNotes = new ArrayList<> ();
+    private FirebaseAuth auth;
     private DatabaseReference databaseReference;
     private StorageReference storageReference;
     private String uid;
     private String[] images;
-    String imageUri;
-    int c;
+    private String imageUri;
+    private String join = null;
+    private int c;
+    private ProgressDialog dialog;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -98,21 +106,142 @@ public class HomeFragment extends Fragment {
     public void onStart()
     {
         super.onStart ();
-        NoteModel noteModel = (NoteModel) requireActivity ().getIntent ().getSerializableExtra ( "export" );
-        if(noteModel != null)
-        {
-            preparingImagesToSave ( noteModel );
-            requireActivity ().getIntent ().removeExtra ( "export" );
-        }
+
         InitData();
         initFirebase();
 
         FloatingActionButton floatingActionButton = requireActivity ().findViewById ( R.id.floatingActionButton );
         floatingActionButton.setVisibility ( View.VISIBLE );
         InitViews();
+        onItemClicked();
         InitRecycler();
+        initDialog();
         new GetData().execute();
         onSearchClick();
+
+        NoteModel noteModel = (NoteModel) requireActivity ().getIntent ().getSerializableExtra ( "export" );
+        String backup = requireActivity ().getIntent ().getStringExtra ( "backup" );
+
+        if(noteModel != null)
+        {
+            join = "join";
+            preparingImagesToSave ( noteModel );
+            requireActivity ().getIntent ().removeExtra ( "export" );
+        }else
+        {
+            if(backup != null)
+            {
+                if(backup.equals ( "backup" ))
+                    backup ();
+                else {
+                    restore ();
+                }
+                requireActivity ().getIntent ().removeExtra ( "backup" );
+            }
+        }
+    }
+
+    private void initDialog()
+    {
+        dialog = new ProgressDialog ( getContext () );
+        dialog.setCancelable ( false );
+        dialog.setTitle("update note");
+        dialog.setMessage("please waite...");
+    }
+
+    private void onItemClicked()
+    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            searchLinear.setOnMenuItemClickListener ( new Toolbar.OnMenuItemClickListener ()
+            {
+                @Override
+                public boolean onMenuItemClick(MenuItem item)
+                {
+                    switch (item.getItemId ())
+                    {
+                        case R.id.backup:
+                            backup ();
+                            break;
+                        case R.id.restore:
+                            restore ();
+                            break;
+                        case R.id.sign_out:
+                            signOut ();
+                            break;
+                        case R.id.join:
+                            Join ();
+                            break;
+                    }
+                    return false;
+                }
+            } );
+        }
+    }
+
+    private void backup()
+    {
+        if(uid != null)
+        {
+            preparingImagesTOBackup (0);
+        }
+        else
+        {
+            Intent intent = new Intent ( getContext (), LoginActivity.class );
+            intent.putExtra ( "backup", "backup" );
+            startActivity ( intent );
+            requireActivity ().finish ();
+        }
+    }
+
+    private void restore()
+    {
+        if(uid != null)
+        {
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+                //system os > marshmello check if permation is enable or not
+                if (ContextCompat.checkSelfPermission( context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+                    //permission not enable
+                    String[] permission = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
+                    requestPermissions(permission, 2);
+                } else {
+                    getMyNotes();
+                }
+            } else {
+                getMyNotes();
+            }
+        }
+        else
+        {
+            Intent intent = new Intent ( getContext (), LoginActivity.class );
+            intent.putExtra ( "backup", "restore" );
+            startActivity ( intent );
+            requireActivity ().finish ();
+        }
+    }
+
+    private void signOut()
+    {
+        if(uid!=null)
+        {
+            auth.signOut ();
+            optionsLinear.setVisibility ( View.GONE );
+            searchLinear.setVisibility ( View.VISIBLE );
+            searchLinear.getMenu ().findItem ( R.id.sign_out ).setVisible ( false );
+            uid = null;
+        }
+    }
+
+    private void Join()
+    {
+        if(optionsLinear.getVisibility () == View.GONE)
+        {
+            optionsLinear.setVisibility ( View.VISIBLE );
+            joinText.setVisibility ( View.VISIBLE);
+            searchLinear.setVisibility ( View.GONE );
+            searchField.setHint ( "enter note id" );
+            searchField.requestFocus ();
+            searchIcon.setVisibility ( View.GONE );
+        }
     }
 
     class updateNote extends AsyncTask<NoteModel,Void,Void>
@@ -132,7 +261,7 @@ public class HomeFragment extends Fragment {
 
     private void initFirebase()
     {
-        FirebaseAuth auth = FirebaseAuth.getInstance ();
+        auth = FirebaseAuth.getInstance ();
         uid = auth.getUid ();
         databaseReference = FirebaseDatabase.getInstance ().getReference ();
     }
@@ -148,7 +277,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String word = s.toString ();
-                if(joinButton.getVisibility () == View.GONE)
+                if(joinText.getVisibility () == View.GONE)
                     new getSearchData ().execute ( word );
             }
 
@@ -164,15 +293,23 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v)
             {
-                if(searchField.getVisibility () == View.GONE)
+                if(optionsLinear.getVisibility () == View.GONE)
                 {
-                    searchField.setVisibility ( View.VISIBLE );
+                    optionsLinear.setVisibility ( View.VISIBLE );
                     searchField.requestFocus ();
-                    closeSearch.setVisibility ( View.VISIBLE );
-                    joinButton.setVisibility ( View.GONE );
-                    viewInSearch.setVisibility ( View.GONE );
-                    searchIcon.setVisibility ( View.GONE );
+                    searchLinear.setVisibility ( View.GONE );
                 }
+            }
+        } );
+
+        joinText.setOnClickListener ( new View.OnClickListener ()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                String noteId = searchField.getText ().toString ();
+
+                exportNoteFromFirebase ( noteId );
             }
         } );
 
@@ -181,104 +318,15 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v)
             {
-                closeSearch.setVisibility ( View.GONE );
-                searchField.setVisibility ( View.GONE );
-                joinButton.setVisibility ( View.VISIBLE );
-                viewInSearch.setVisibility ( View.VISIBLE );
+                optionsLinear.setVisibility ( View.GONE );
+                joinText.setVisibility ( View.GONE );
+                searchLinear.setVisibility ( View.VISIBLE );
                 searchIcon.setVisibility ( View.VISIBLE );
                 searchField.setText ( "" );
                 new GetData ().execute ();
             }
         } );
 
-        joinButton.setOnClickListener ( new View.OnClickListener ()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                if(searchField.getVisibility () == View.GONE)
-                {
-                    searchField.setVisibility ( View.VISIBLE );
-                    closeSearch.setVisibility ( View.VISIBLE );
-                    searchField.setHint ( "enter note id" );
-                    searchField.requestFocus ();
-                    viewInSearch.setVisibility ( View.GONE );
-                    searchIcon.setVisibility ( View.GONE );
-                }else
-                    {
-                    String noteId = searchField.getText ().toString ();
-
-                    exportNoteFromFirebase ( noteId );
-                }
-            }
-        } );
-
-        menuIcon.setOnClickListener ( new View.OnClickListener ()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                searchLinear.setVisibility ( View.GONE );
-                optionsLinear.setVisibility ( View.VISIBLE );
-            }
-        } );
-
-        closeOptions.setOnClickListener ( new View.OnClickListener ()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                optionsLinear.setVisibility ( View.GONE );
-                searchLinear.setVisibility ( View.VISIBLE );
-            }
-        } );
-
-        backupIcon.setOnClickListener ( new View.OnClickListener ()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                if(uid != null)
-                {
-                    preparingImagesTOBackup (0);
-                }
-                else
-                    {
-                        Intent intent = new Intent ( getContext (), LoginActivity.class );
-                        intent.putExtra ( "backup", "backup" );
-                        startActivity ( intent );
-                    }
-            }
-        } );
-
-        restoreIcon.setOnClickListener ( new View.OnClickListener ()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                if(uid != null)
-                {
-                    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-                        //system os > marshmello check if permation is enable or not
-                        if (ContextCompat.checkSelfPermission( context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
-                            //permission not enable
-                            String[] permission = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
-                            requestPermissions(permission, 2);
-                        } else {
-                            getMyNotes();
-                        }
-                    } else {
-                        getMyNotes();
-                    }
-                }
-                else
-                {
-                    Intent intent = new Intent ( getContext (), LoginActivity.class );
-                    intent.putExtra ( "backup", "restore" );
-                    startActivity ( intent );
-                }
-            }
-        } );
     }
 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
@@ -327,19 +375,30 @@ public class HomeFragment extends Fragment {
         {
             images = noteModel.getImageUrl ().split ( "#" );
 
-            new DownloadFile (1).execute ( images[1],noteModel.getNote_id ());
+            new DownloadFile (1,noteModel).execute ( images[1],noteModel.getNote_id ());
         }else
             {
-                if(restoreNotes.size () != 0)
-                    preparingImagesToSave ( restoreNotes.get ( 0 ) );
+                if(join != null)
+                {
+                    join = null;
+                    openEditNote ( noteModel );
+                    if(dialog.isShowing ())
+                        dialog.dismiss ();
+                }else
+                {
+                    if (restoreNotes.size () != 0)
+                        preparingImagesToSave ( restoreNotes.get ( 0 ) );
+                }
             }
     }
 
     class DownloadFile extends AsyncTask<String,Integer,String> {
         int a;
+        NoteModel noteModel;
 
-        public DownloadFile(int a) {
+        public DownloadFile(int a, NoteModel noteModel) {
             this.a = a;
+            this.noteModel=noteModel;
         }
 
         ProgressDialog mProgressDialog = new ProgressDialog(getContext ());// Change Mainactivity.this with your activity name.
@@ -399,13 +458,22 @@ public class HomeFragment extends Fragment {
         protected void onPostExecute(String string) {
             super.onPostExecute ( string );
             if(a<images.length-1){
-                new DownloadFile (a+1).execute ( images[a+1],string );
+                new DownloadFile (a+1,noteModel).execute ( images[a+1],string );
             }else
                 {
                     new updateImage ().execute ( imageUri,string );
                     Toast.makeText(getContext (), "File Downloaded", Toast.LENGTH_SHORT).show();
-                    if(restoreNotes.size () != 0)
-                        preparingImagesToSave ( restoreNotes.get ( 0 ) );
+                    if(join != null)
+                    {
+                        join = null;
+                        openEditNote ( noteModel );
+                        if(dialog.isShowing ())
+                            dialog.dismiss ();
+                    }else
+                        {
+                            if (restoreNotes.size () != 0)
+                                preparingImagesToSave ( restoreNotes.get ( 0 ) );
+                        }
                     imageUri="";
                 }
         }
@@ -434,14 +502,18 @@ public class HomeFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot)
             {
+                List<NoteModel> models = new ArrayList<>();
                 for(DataSnapshot dataSnapshot : snapshot.getChildren ())
                 {
                     NoteModel model = dataSnapshot.getValue (NoteModel.class);
                     if(model != null)
                     {
                         new checkRestoreNote ().execute ( model );
+                        models.add ( model );
                     }
                 }
+                if(models.size () == 0)
+                    Toast.makeText ( context, "not have any notes", Toast.LENGTH_SHORT ).show ();
             }
 
             @Override
@@ -455,6 +527,7 @@ public class HomeFragment extends Fragment {
 
     class Insert extends AsyncTask<NoteModel, Void, Void>
     {
+
         @Override
         protected Void doInBackground(NoteModel... noteModels)
         {
@@ -466,20 +539,27 @@ public class HomeFragment extends Fragment {
         protected void onPostExecute(Void aVoid)
         {
             super.onPostExecute ( aVoid );
+
             new GetData ().execute ();
         }
     }
 
     private void preparingImagesTOBackup(int item)
     {
-        final NoteModel model = noteModels.get ( item );
-        String modelImage = model.getImageUrl ();
+        if(noteModels != null && noteModels.size () != 0) {
+            final NoteModel model = noteModels.get ( item );
+            String modelImage = model.getImageUrl ();
 
-        if(!modelImage.isEmpty ()) {
-            String[] Images = modelImage.split ( "#" );
-            uploadToStorage (Images,1,model,item);
-        }else
-            uploadNote ( model,item );
+            if (!modelImage.isEmpty ()) {
+                String[] Images = modelImage.split ( "#" );
+                uploadToStorage ( Images, 1, model, item );
+            } else
+                uploadNote ( model, item );
+        }
+        else
+            {
+                Toast.makeText ( context, "no notes to backup", Toast.LENGTH_SHORT ).show ();
+            }
     }
 
     private void uploadToStorage(final String[] images, int i, final NoteModel model, final int item) {
@@ -732,13 +812,10 @@ public class HomeFragment extends Fragment {
         searchField=view.findViewById ( R.id.search_field );
         searchIcon=view.findViewById ( R.id.search_icon );
         closeSearch=view.findViewById ( R.id.close_search );
-        joinButton=view.findViewById ( R.id.join );
-        viewInSearch=view.findViewById ( R.id.view_in_search );
-        backupIcon=view.findViewById ( R.id.backup_icon );
-        restoreIcon=view.findViewById ( R.id.restore_icon );
-        menuIcon=view.findViewById ( R.id.menu_icon );
-        closeOptions=view.findViewById ( R.id.close_options );
+        if(uid!=null)
+            searchLinear.getMenu ().findItem ( R.id.sign_out ).setVisible ( true );
         optionsLinear=view.findViewById ( R.id.options_bar );
+        joinText=view.findViewById ( R.id.join_text);
     }
 
     private void InitData() {
@@ -773,12 +850,31 @@ public class HomeFragment extends Fragment {
 
     class Delete extends AsyncTask<NoteModel,Void,Void>
     {
+        NoteModel note;
+        int noteId;
+        Delete(){}
+
+        Delete(NoteModel note)
+        {
+            this.note = note;
+        }
         @Override
         protected Void doInBackground(NoteModel... noteModels) {
+            noteId = noteModels[0].getId ();
             db.Dao ().Delete (noteModels[0]);
-            if(noteModels[0].getNote_id () != null)
-                databaseReference.child ( "notes" ).child ( noteModels[0].getNote_id () ).removeValue ();
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute ( aVoid );
+            if(note != null)
+            {
+                note.setId ( noteId );
+                new updateId ( note.getPointer () ).execute ( noteId );
+                join = "join";
+                preparingImagesToSave ( note );
+            }
         }
     }
 
@@ -823,7 +919,12 @@ public class HomeFragment extends Fragment {
                         editLinear.setVisibility ( View.GONE );
                         searchLinear.setVisibility ( View.VISIBLE );
                     }else
-                        openEditNote(noteModel);
+                        {
+                            if(noteModel.getOnline_state () == 1)
+                                openDialog ( noteModel );
+                            else
+                                openEditNote ( noteModel );
+                        }
                 }
             } );
 
@@ -873,11 +974,59 @@ public class HomeFragment extends Fragment {
        }
     }
 
-    private void openEditNote(NoteModel noteModel)
+    private void openEditNote(final NoteModel noteModel)
     {
-        Intent intent = new Intent ( getContext (), EditNoteActivity.class );
+        final Intent intent = new Intent ( getContext (), EditNoteActivity.class );
         intent.putExtra ( "noteModel", noteModel );
         startActivity ( intent );
+    }
+
+    private void openDialog(final NoteModel noteModel)
+    {
+        final CustomOpenClass cdd=new CustomOpenClass (getActivity ());
+        cdd.show();
+        cdd.yes.setOnClickListener ( new View.OnClickListener ()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                databaseReference.child ( "notes" ).child ( noteModel.getNote_id () ).addValueEventListener ( new ValueEventListener ()
+                {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot)
+                    {
+                        dialog.show ();
+                        NoteModel note = snapshot.getValue (NoteModel.class);
+                        if(note != null)
+                        {
+                            new Insert ().execute ( note );
+                            note.setPointer ( note.getTitle () + note.getId () );
+                            new updatePointer ( note.getId () ).execute ( note.getTitle () + note.getId () );
+                            new Delete (note).execute ( noteModel );
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error)
+                    {
+                        Toast.makeText ( context, "error", Toast.LENGTH_SHORT ).show ();
+                        openEditNote ( noteModel );
+                        cdd.dismiss ();
+                    }
+                } );
+                cdd.dismiss ();
+            }
+        } );
+
+        cdd.no.setOnClickListener ( new View.OnClickListener ()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                openEditNote ( noteModel );
+                cdd.dismiss ();
+            }
+        } );
     }
 
 }

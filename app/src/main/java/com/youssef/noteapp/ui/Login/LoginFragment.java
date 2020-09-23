@@ -39,8 +39,7 @@ import com.google.firebase.storage.UploadTask;
 import com.youssef.noteapp.R;
 import com.youssef.noteapp.data.local.AppDataBase;
 import com.youssef.noteapp.models.NoteModel;
-import com.youssef.noteapp.ui.CustomDialogClass;
-import com.youssef.noteapp.ui.CustomLoginClass;
+import com.youssef.noteapp.Dialogs.CustomLoginClass;
 import com.youssef.noteapp.ui.EditNote.EditNoteActivity;
 import com.youssef.noteapp.ui.main.MainActivity;
 
@@ -63,7 +62,7 @@ public class LoginFragment extends Fragment
     private ProgressDialog dialog;
     private AppDataBase db;
     Context context;
-    int backup = 0;
+    int backup;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -112,12 +111,14 @@ public class LoginFragment extends Fragment
                     Toast.makeText ( getContext (), "id not found", Toast.LENGTH_SHORT ).show ();
                 startActivity ( intent );
                 requireActivity ().finish ();
+                dialog.dismiss ();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error)
             {
                 Toast.makeText ( getContext (), error.getMessage (), Toast.LENGTH_SHORT ).show ();
+                dialog.dismiss ();
             }
         } );
     }
@@ -139,7 +140,6 @@ public class LoginFragment extends Fragment
     private void initDialog()
     {
         dialog = new ProgressDialog (context);
-        dialog.setTitle("upload note");
         dialog.setMessage("please waite...");
         dialog.setCancelable(false);
     }
@@ -164,10 +164,16 @@ public class LoginFragment extends Fragment
 
     private void uploading(FirebaseUser user)
     {
+        String backup = requireActivity ().getIntent ().getStringExtra ( "backup" );
         if (noteModel != null)
             checkPhoto(user);
+        else if(backup != null)
+        {}
         else
-            exportNote ( noteId );
+            {
+                exportNote ( noteId );
+                dialog.show ();
+            }
     }
 
     private void initFirebase()
@@ -246,8 +252,8 @@ public class LoginFragment extends Fragment
             return;
         }
 
-
         completeLogin(email,password);
+        dialog.show ();
     }
 
     private void completeLogin(String email, String password)
@@ -261,13 +267,20 @@ public class LoginFragment extends Fragment
                 {
                     String backup = requireActivity ().getIntent ().getStringExtra ( "backup" );
                     if(backup != null)
-                        onBack ();
+                    {
+                        Intent intent = new Intent ( getContext (), MainActivity.class );
+                        intent.putExtra ( "backup", backup );
+                        startActivity ( intent );
+                        requireActivity ().finish ();
+                        dialog.dismiss ();
+                    }
                     else
                         uploading ( task.getResult ().getUser () );
                 }
                 else
                     {
                         Toast.makeText ( getContext (), task.getException ().getMessage (), Toast.LENGTH_SHORT ).show ();
+                        dialog.dismiss ();
                     }
             }
         } );
@@ -281,12 +294,14 @@ public class LoginFragment extends Fragment
             String[] Images = modelImage.split ( "#" );
             uploadToStorage (Images,1,user);
         }else
-            uploadNote ( noteModel,user.getUid () );
+            {
+                uploadNote ( noteModel, user.getUid () );
+            }
+        dialog.show ();
     }
 
     private void uploadToStorage(final String[] images, final int i, final FirebaseUser user) {
         Uri imageUri = Uri.parse ( images[ i ] );
-        dialog.show ();
         storageReference = FirebaseStorage.getInstance ().getReference ().child ( "note Image/" ).child ( imageUri.getLastPathSegment () );
         UploadTask uploadTask = storageReference.putFile ( imageUri );
         Task<Uri> task = uploadTask.continueWithTask ( new Continuation<UploadTask.TaskSnapshot, Task<Uri>> () {
@@ -346,8 +361,8 @@ public class LoginFragment extends Fragment
                     }else
                         {
                             Toast.makeText ( getContext (), task.getException ().getMessage (), Toast.LENGTH_SHORT ).show ();
-                            dialog.dismiss ();
                         }
+                    dialog.dismiss ();
                 }
             } );
         }
@@ -397,10 +412,7 @@ public class LoginFragment extends Fragment
         login=loginFragment.findViewById ( R.id.login );
         signUp=loginFragment.findViewById ( R.id.sign_up );
         toolbar=loginFragment.findViewById ( R.id.toolbarId );
-        if(backup == 1)
-            signUp.setVisibility ( View.GONE );
-        else
-            signUp.setVisibility ( View.VISIBLE );
+
     }
 
     private void resetPassword(String email)

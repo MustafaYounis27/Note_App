@@ -33,15 +33,13 @@ public class LoginActivity extends AppCompatActivity
 
         if(backup != null)
         {
-            if(backup.equals ( "backup" ))
-                replaceFragment ( new LoginFragment ( 0 ) );
+            replaceFragment ( new LoginFragment ( 1 ) );
+        }else {
+            if (noteModel != null)
+                replaceFragment ( new LoginFragment ( noteModel ) );
             else
-                replaceFragment ( new LoginFragment ( 1 ) );
+                replaceFragment ( new LoginFragment ( noteId ) );
         }
-        if(noteModel != null)
-            replaceFragment ( new LoginFragment (noteModel) );
-        else
-            replaceFragment ( new LoginFragment (noteId) );
     }
 
     void replaceFragment(Fragment fragment)
@@ -56,9 +54,11 @@ public class LoginActivity extends AppCompatActivity
     public void onBackPressed() {
         super.onBackPressed ();
         NoteModel noteModel = (NoteModel) getIntent ().getSerializableExtra ( "noteModel" );
+
         if(noteModel != null)
-        {
             startActivity ( new Intent ( getApplicationContext (), EditNoteActivity.class ) );
-        }
+        else
+            startActivity ( new Intent ( getApplicationContext (), MainActivity.class ) );
+        finish ();
     }
 }

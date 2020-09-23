@@ -406,7 +406,7 @@ public class WriteNewNoteActivity extends AppCompatActivity {
         String MFilePath = Environment.getExternalStorageDirectory() + "/Note App/pdf/" + MFileName + ".pdf";
         Uri pdfuri=Uri.parse (new File(Environment.getExternalStorageDirectory() + "/Note App/pdf/" + PdfName + ".pdf").toString ());
         try {
-            BaseFont bf = BaseFont.createFont("res/font/cairo_extralight.ttf",
+            BaseFont bf = BaseFont.createFont("res/font/quicksand_light.otf",
                     BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
             Font font = new Font(bf, 12);
             //Create Instance Of Pdf Writer Class

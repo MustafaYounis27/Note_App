@@ -3,11 +3,8 @@ package com.youssef.noteapp.ui.Attachment;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.room.Room;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,10 +14,6 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 import com.youssef.noteapp.R;
-import com.youssef.noteapp.data.local.AppDataBase;
-import com.youssef.noteapp.models.NoteModel;
-import com.youssef.noteapp.ui.CustomDialogClass;
-import com.youssef.noteapp.ui.fragments.HomeFragment;
 
 import java.util.ArrayList;
 import java.util.List;

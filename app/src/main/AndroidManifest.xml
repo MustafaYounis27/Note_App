@@ -6,10 +6,10 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/cover"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:requestLegacyExternalStorage="true"
-        android:roundIcon="@drawable/cover"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="false"
         android:theme="@style/AppTheme">
         <activity android:name=".ui.EditNote.EditNoteActivity" android:screenOrientation="portrait" />

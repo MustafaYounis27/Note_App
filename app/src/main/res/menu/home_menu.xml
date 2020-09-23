@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-<item android:title="backup"/>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/backup"
+        android:title="Backup" />
+    <item
+        android:id="@+id/restore"
+        android:title="Restore" />
+    <item
+        android:id="@+id/sign_out"
+        android:title="Sign out"
+        android:visible="false"/>
+    <item
+        android:id="@+id/join"
+        android:title="Join"
+        app:showAsAction="ifRoom"/>
 </menu>

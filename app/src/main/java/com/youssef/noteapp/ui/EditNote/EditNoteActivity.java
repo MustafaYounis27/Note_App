@@ -14,15 +14,13 @@ import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.style.BackgroundColorSpan;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
@@ -502,7 +500,7 @@ public class EditNoteActivity extends AppCompatActivity
         String MFilePath = Environment.getExternalStorageDirectory() + "/Note App/pdf/" + PdfName + ".pdf";
         Uri pdfuri=Uri.parse (new File (Environment.getExternalStorageDirectory() + "/Note App/pdf/" + PdfName + ".pdf").toString ());
         try {
-            BaseFont bf = BaseFont.createFont("res/font/notonaskharabic_regular.ttf",
+            BaseFont bf = BaseFont.createFont("res/font/quicksand_light.otf",
                     BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
             Font font = new Font(bf, 12);
             //Create Instance Of Pdf Writer Class
@@ -515,7 +513,7 @@ public class EditNoteActivity extends AppCompatActivity
             // cell.setBorder(Rectangle.NO_BORDER);
             Paragraph p;
             // Chunk chunk = new Chunk(Subject);
-            p = new Paragraph("yyyy" + Subject, font);
+            p = new Paragraph(Subject, font);
             //    p.add(chunk);
             //  p.setAlignment(Element.ALIGN_LEFT);
             // cell.addElement(p);

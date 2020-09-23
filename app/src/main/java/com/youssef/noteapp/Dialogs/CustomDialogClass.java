@@ -1,4 +1,4 @@
-package com.youssef.noteapp.ui;
+package com.youssef.noteapp.Dialogs;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -6,18 +6,17 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.TextView;
 
 import com.youssef.noteapp.R;
 
-public class CustomLoginClass extends Dialog implements android.view.View.OnClickListener {
+public class CustomDialogClass extends Dialog implements android.view.View.OnClickListener {
 
     public Activity c;
     public Dialog d;
     public Button yes, no;
-    public EditText emailField;
 
-    public CustomLoginClass(Activity a) {
+    public CustomDialogClass(Activity a) {
         super(a);
         // TODO Auto-generated constructor stub
         this.c = a;
@@ -27,8 +26,7 @@ public class CustomLoginClass extends Dialog implements android.view.View.OnClic
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature( Window.FEATURE_NO_TITLE);
-        setContentView( R.layout.custom_login_view);
-        emailField = findViewById ( R.id.email_field );
+        setContentView(R.layout.custom_dialog);
         yes =  findViewById(R.id.btn_yes);
         no =  findViewById(R.id.btn_no);
         yes.setOnClickListener(this);

@@ -94,7 +94,6 @@ public class registerFragment extends Fragment
     private void initDialog()
     {
         dialog = new ProgressDialog (getContext ());
-        dialog.setTitle("upload note");
         dialog.setMessage("please waite...");
         dialog.setCancelable(false);
     }
@@ -179,6 +178,7 @@ public class registerFragment extends Fragment
         }
 
         completeRegister(username,email,password);
+        dialog.show ();
     }
 
     private void completeRegister(final String username, String email, String password)
@@ -194,18 +194,25 @@ public class registerFragment extends Fragment
                     uploadUserDate ( uid,username );
                     String backup = requireActivity ().getIntent ().getStringExtra ( "backup" );
                     if(backup != null)
-                        onBack ();
+                    {
+                        Intent intent = new Intent ( getContext (), MainActivity.class );
+                        intent.putExtra ( "backup", backup );
+                        startActivity ( intent );
+                        requireActivity ().finish ();
+                        dialog.dismiss ();
+                    }
                     else
                     {
                         if(noteModel != null)
                             checkPhoto ( task.getResult ().getUser () );
                         else
-                            exportNote(noteId);
+                            exportNote ( noteId );
                     }
                 }
                 else
                 {
                     Toast.makeText ( getContext (), task.getException ().getMessage (), Toast.LENGTH_SHORT ).show ();
+                    dialog.dismiss ();
                 }
             }
         } );
@@ -219,12 +226,11 @@ public class registerFragment extends Fragment
             String[] Images = modelImage.split ( "#" );
             uploadToStorage (Images,1,user);
         }else
-            uploadNote ( noteModel,user.getUid () );
+            uploadNote ( noteModel, user.getUid () );
     }
 
     private void uploadToStorage(final String[] images, final int i, final FirebaseUser user) {
         Uri imageUri = Uri.parse ( images[ i ] );
-        dialog.show ();
         storageReference = FirebaseStorage.getInstance ().getReference ().child ( "note Image/" ).child ( imageUri.getLastPathSegment () );
         UploadTask uploadTask = storageReference.putFile ( imageUri );
         Task<Uri> task = uploadTask.continueWithTask ( new Continuation<UploadTask.TaskSnapshot, Task<Uri>> () {
@@ -284,8 +290,8 @@ public class registerFragment extends Fragment
                     }else
                     {
                         Toast.makeText ( getContext (), task.getException ().getMessage (), Toast.LENGTH_SHORT ).show ();
-                        dialog.dismiss ();
                     }
+                    dialog.dismiss ();
                 }
             } );
         }
@@ -300,44 +306,6 @@ public class registerFragment extends Fragment
     private void uploadUserDate(String uid, String username)
     {
         databaseReference.child ( "users" ).child ( uid ).child ( "username" ).setValue ( username );
-    }
-
-    private void uploadNote(final String uid)
-    {
-        final String noteId;
-
-        if(noteModel.getNote_id () != null)
-            noteId = noteModel.getNote_id ();
-        else
-            noteId = databaseReference.child ( "notes" ).child ( uid ).push ().getKey ();
-
-        if(noteId != null)
-        {
-            dialog.show ();
-            databaseReference.child ( "notes" ).child ( noteId ).setValue ( noteModel ).addOnCompleteListener ( new OnCompleteListener<Void> ()
-            {
-                @Override
-                public void onComplete(@NonNull Task<Void> task)
-                {
-                    if(task.isSuccessful ())
-                    {
-                        databaseReference.child ( "notes" ).child ( noteId ).child ( "id" ).removeValue ();
-                        databaseReference.child ( "notes" ).child ( noteId ).child ( "note_id" ).setValue ( noteId );
-                        noteModel.setNote_id ( noteId );
-                        noteModel.setOnline_state ( 1 );
-                        new updateNote ().execute ( noteModel );
-                        Intent intent = new Intent ( getContext (), EditNoteActivity.class );
-                        intent.putExtra ( "noteModel", noteModel );
-                        startActivity ( intent );
-                        requireActivity ().finish ();
-                    }else
-                    {
-                        Toast.makeText ( getContext (), task.getException ().getMessage (), Toast.LENGTH_SHORT ).show ();
-                        dialog.dismiss ();
-                    }
-                }
-            } );
-        }
     }
 
     class updateNote extends AsyncTask<NoteModel,Void,Void>
@@ -373,6 +341,7 @@ public class registerFragment extends Fragment
                     Toast.makeText ( getContext (), "id not found", Toast.LENGTH_SHORT ).show ();
                 startActivity ( intent );
                 requireActivity ().finish ();
+                dialog.dismiss ();
             }
 
             @Override

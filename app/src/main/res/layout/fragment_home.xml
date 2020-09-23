@@ -80,57 +80,17 @@
             android:visibility="gone"
             >
 
-            <ImageView
-                android:id="@+id/close_options"
+            <TextView
+                android:id="@+id/join_text"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_marginRight="5dp"
-                android:src="@drawable/close_icon"
-                />
-
-            <View
-                android:id="@+id/view_in_options"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
+                android:padding="10dp"
                 android:background="#EF5D5D"
-                />
-
-            <ImageView
-                android:id="@+id/backup_icon"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="15dp"
-                android:src="@drawable/backup"
-                />
-
-            <ImageView
-                android:id="@+id/restore_icon"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="5dp"
-                android:src="@drawable/restore"
-                />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/search_bar"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:orientation="horizontal"
-            android:background="#EF5D5D"
-            android:padding="5dp"
-            >
-
-            <ImageView
-                android:id="@+id/close_search"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginRight="5dp"
+                android:text="Join"
+                android:textSize="16dp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
                 android:visibility="gone"
-                android:src="@drawable/close_icon"
                 />
 
             <EditText
@@ -143,10 +103,29 @@
                 android:layout_marginRight="5dp"
                 android:layout_marginLeft="5dp"
                 android:textSize="20sp"
-                android:visibility="gone"
                 android:textColor="@android:color/black"
                 android:background="@drawable/solid_white_backgroung"
                 />
+
+            <ImageView
+                android:id="@+id/close_search"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginRight="5dp"
+                android:src="@drawable/close_icon"
+                />
+
+        </LinearLayout>
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/search_bar"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:background="#EF5D5D"
+            android:padding="5dp"
+            app:menu="@menu/home_menu"
+            >
 
             <ImageView
                 android:id="@+id/search_icon"
@@ -156,36 +135,7 @@
                 android:src="@drawable/search_icon"
                 />
 
-            <View
-                android:id="@+id/view_in_search"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="#EF5D5D"
-                />
-
-            <Button
-                android:id="@+id/join"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="Join"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/white"
-                android:background="#EF5D5D"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                />
-
-            <ImageView
-                android:id="@+id/menu_icon"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="5dp"
-                android:src="@drawable/menu"
-                />
-
-        </LinearLayout>
+        </androidx.appcompat.widget.Toolbar>
 
     </RelativeLayout>
 

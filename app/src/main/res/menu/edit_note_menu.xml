@@ -2,6 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/update_note"
+        android:title="Update note"
+        android:visible="false"
+        />
+    <item
         android:id="@+id/share_note"
         android:title="Share note"
         />

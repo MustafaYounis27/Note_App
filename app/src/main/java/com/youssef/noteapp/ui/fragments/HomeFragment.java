@@ -377,19 +377,19 @@ public class HomeFragment extends Fragment {
 
             new DownloadFile (1,noteModel).execute ( images[1],noteModel.getNote_id ());
         }else
+        {
+            if(join != null)
             {
-                if(join != null)
-                {
-                    join = null;
-                    openEditNote ( noteModel );
-                    if(dialog.isShowing ())
-                        dialog.dismiss ();
-                }else
-                {
-                    if (restoreNotes.size () != 0)
-                        preparingImagesToSave ( restoreNotes.get ( 0 ) );
-                }
+                join = null;
+                openEditNote ( noteModel );
+                if(dialog.isShowing ())
+                    dialog.dismiss ();
+            }else
+            {
+                if (restoreNotes.size () != 0)
+                    preparingImagesToSave ( restoreNotes.get ( 0 ) );
             }
+        }
     }
 
     class DownloadFile extends AsyncTask<String,Integer,String> {
@@ -920,10 +920,7 @@ public class HomeFragment extends Fragment {
                         searchLinear.setVisibility ( View.VISIBLE );
                     }else
                         {
-                            if(noteModel.getOnline_state () == 1)
-                                openDialog ( noteModel );
-                            else
-                                openEditNote ( noteModel );
+                            openEditNote ( noteModel );
                         }
                 }
             } );
@@ -979,54 +976,6 @@ public class HomeFragment extends Fragment {
         final Intent intent = new Intent ( getContext (), EditNoteActivity.class );
         intent.putExtra ( "noteModel", noteModel );
         startActivity ( intent );
-    }
-
-    private void openDialog(final NoteModel noteModel)
-    {
-        final CustomOpenClass cdd=new CustomOpenClass (getActivity ());
-        cdd.show();
-        cdd.yes.setOnClickListener ( new View.OnClickListener ()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                databaseReference.child ( "notes" ).child ( noteModel.getNote_id () ).addValueEventListener ( new ValueEventListener ()
-                {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot)
-                    {
-                        dialog.show ();
-                        NoteModel note = snapshot.getValue (NoteModel.class);
-                        if(note != null)
-                        {
-                            new Insert ().execute ( note );
-                            note.setPointer ( note.getTitle () + note.getId () );
-                            new updatePointer ( note.getId () ).execute ( note.getTitle () + note.getId () );
-                            new Delete (note).execute ( noteModel );
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error)
-                    {
-                        Toast.makeText ( context, "error", Toast.LENGTH_SHORT ).show ();
-                        openEditNote ( noteModel );
-                        cdd.dismiss ();
-                    }
-                } );
-                cdd.dismiss ();
-            }
-        } );
-
-        cdd.no.setOnClickListener ( new View.OnClickListener ()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                openEditNote ( noteModel );
-                cdd.dismiss ();
-            }
-        } );
     }
 
 }

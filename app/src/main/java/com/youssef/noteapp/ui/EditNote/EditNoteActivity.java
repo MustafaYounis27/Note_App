@@ -10,6 +10,7 @@ import androidx.room.Room;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -29,23 +30,36 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.youssef.noteapp.Dialogs.CustomOpenClass;
 import com.youssef.noteapp.R;
 import com.youssef.noteapp.data.local.AppDataBase;
 import com.youssef.noteapp.models.NoteModel;
 import com.youssef.noteapp.ui.Attachment.AttachmentActivity;
 import com.youssef.noteapp.ui.Login.LoginActivity;
+import com.youssef.noteapp.ui.fragments.HomeFragment;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -56,6 +70,7 @@ import java.util.Locale;
 public class EditNoteActivity extends AppCompatActivity
 {
     private EditText TitleField, SubjectField;
+    private TextView noteIdField;
     private Toolbar toolbar;
     private LinearLayout linearLayout, BackGrounLinear, Attachment;
     private String text_color = null, backgroun_color = null;
@@ -63,12 +78,17 @@ public class EditNoteActivity extends AppCompatActivity
     private List<Uri> ImagesUri = new ArrayList<> ();
     private NoteModel noteModel;
     private AppDataBase db;
+    private FirebaseAuth auth;
+    private DatabaseReference databaseReference;
+    String imageUri;
+    String[] images;
 
     @Override
     protected void onStart() {
         super.onStart ();
         noteModel = (NoteModel) getIntent ().getSerializableExtra ( "noteModel" );
 
+        initFirebase();
         InitViews();
         InitClors();
         InitBackGroundClors();
@@ -79,6 +99,12 @@ public class EditNoteActivity extends AppCompatActivity
         text_color=noteModel.getText_color ();
         setTextColor(text_color);
         setBackgroundColor(backgroun_color);
+    }
+
+    private void initFirebase()
+    {
+        auth = FirebaseAuth.getInstance ();
+        databaseReference = FirebaseDatabase.getInstance ().getReference ();
     }
 
     @Override
@@ -155,6 +181,9 @@ public class EditNoteActivity extends AppCompatActivity
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
+                    case R.id.update_note:
+                        getUpdates();
+                        break;
                     case R.id.text_color:
                         linearLayout.setVisibility(View.VISIBLE);
                         break;
@@ -176,6 +205,168 @@ public class EditNoteActivity extends AppCompatActivity
                 return false;
             }
         });
+    }
+
+    private void getUpdates()
+    {
+        openDialog ( noteModel );
+    }
+
+    private void openDialog(final NoteModel noteModel)
+    {
+        final CustomOpenClass cdd=new CustomOpenClass (this);
+        cdd.show();
+        cdd.yes.setOnClickListener ( new View.OnClickListener ()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                cdd.dismiss ();
+                update(noteModel);
+            }
+        } );
+
+        cdd.no.setOnClickListener ( new View.OnClickListener ()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                cdd.dismiss ();
+            }
+        } );
+    }
+
+    private void update(final NoteModel noteModel)
+    {
+        databaseReference.child ( "notes" ).child ( noteModel.getNote_id () ).addValueEventListener ( new ValueEventListener ()
+        {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot)
+            {
+                NoteModel note = snapshot.getValue (NoteModel.class);
+                if(note != null)
+                {
+                    noteModel.setTitle ( note.getTitle () );
+                    noteModel.setSubject ( note.getSubject () );
+                    noteModel.setBackground_color ( note.getBackground_color () );
+                    noteModel.setText_color ( note.getText_color () );
+                    new updateNote ().execute ( noteModel );
+                    preparingImagesToSave ( note );
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error)
+            {
+                Toast.makeText ( getApplicationContext (), "error", Toast.LENGTH_SHORT ).show ();
+            }
+        } );
+    }
+
+    private void preparingImagesToSave(NoteModel note)
+    {
+        if(note != null)
+            if (!note.getImageUrl ().isEmpty ())
+                if (note.getImageUrl () != noteModel.getImageUrl ()) {
+                    images = note.getImageUrl ().split ( "#" );
+                    noteIdField.setText ( "updating..." );
+                    new DownloadFile ( 1, note ).execute ( images[ 1 ], note.getNote_id () );
+                    return;
+                }
+        InitViews ();
+        Toast.makeText ( this, "updated", Toast.LENGTH_SHORT ).show ();
+    }
+
+    class DownloadFile extends AsyncTask<String,Integer,String> {
+        int a;
+        NoteModel noteModel;
+
+        public DownloadFile(int a, NoteModel noteModel) {
+            this.a = a;
+            this.noteModel=noteModel;
+        }
+/*
+        ProgressDialog mProgressDialog = new ProgressDialog(getApplicationContext ());// Change Mainactivity.this with your activity name.
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mProgressDialog.setMessage("Downloading");
+            mProgressDialog.setIndeterminate(false);
+            mProgressDialog.setMax(100);
+            mProgressDialog.setCancelable(true);
+            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            mProgressDialog.show();
+        }*/
+        @Override
+        protected String doInBackground(String... aurl) {
+            int count;
+            String id = null;
+            try {
+                URL url = new URL(aurl[0]);
+                id = aurl[1];
+                URLConnection conexion = url.openConnection();
+                conexion.connect();
+                String name = new Date().toString() + ".jpg";
+
+                int lenghtOfFile = conexion.getContentLength();
+                String PATH = Environment.getExternalStorageDirectory()+"/Note App/Images/";
+                File folder = new File(PATH);
+                if(!folder.exists()){
+                    folder.mkdir();//If there is no folder it will be created.
+                }
+                InputStream input = new BufferedInputStream (url.openStream());
+                OutputStream output = new FileOutputStream(PATH+name);
+                Uri Imageuri=Uri.fromFile (new File(PATH+name));
+                imageUri += "#"+Imageuri;
+                byte data[] = new byte[1024];
+                long total = 0;
+                while ((count = input.read(data)) != -1) {
+                    total += count;
+                    publishProgress ((int)(total*100/lenghtOfFile));
+                    output.write(data, 0, count);
+                }
+                output.flush();
+                output.close();
+                input.close();
+            } catch (Exception e) {}
+            return id;
+        }
+      /*  protected void onProgressUpdate(Integer... progress) {
+            mProgressDialog.setProgress(progress[0]);
+            if(mProgressDialog.getProgress()==mProgressDialog.getMax()){
+                mProgressDialog.dismiss();
+            }
+        }*/
+
+        @Override
+        protected void onPostExecute(String string) {
+            super.onPostExecute ( string );
+            if(a<images.length-1){
+                new DownloadFile (a+1,noteModel).execute ( images[a+1],string );
+            }else
+            {
+                new updateImage ().execute ( imageUri,string );
+                Toast.makeText(getApplicationContext (), "File Downloaded", Toast.LENGTH_SHORT).show();
+                imageUri="";
+                InitViews ();
+            }
+        }
+    }
+
+    class updateImage extends AsyncTask<String,Void,Void>
+    {
+        @Override
+        protected Void doInBackground(String... strings)
+        {
+            db.Dao ().updateImage ( strings[0],strings[1] );
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute ( aVoid );
+        }
     }
 
     private void share(Uri uri)
@@ -269,7 +460,7 @@ public class EditNoteActivity extends AppCompatActivity
             }
         } );
 
-        TextView noteIdField = findViewById ( R.id.note_id );
+        noteIdField = findViewById ( R.id.note_id );
         if(noteModel.getNote_id () != null)
         {
             noteIdField.setText ( noteModel.getNote_id () );
@@ -294,6 +485,8 @@ public class EditNoteActivity extends AppCompatActivity
                 startActivity ( intent );
             }
         });
+        if(noteModel.getNote_id () != null)
+            toolbar.getMenu ().findItem ( R.id.update_note ).setVisible ( true );
     }
 
     private void undoActions()

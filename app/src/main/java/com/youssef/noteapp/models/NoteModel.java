@@ -110,8 +110,8 @@ public class NoteModel implements Serializable {
         return ImageUrl;
     }
 
-    public void setImageUrl(String imageUrl) {
-        ImageUrl = imageUrl;
+    public void setImageUrl(String ImageUrl) {
+        this.ImageUrl = ImageUrl;
     }
 
     public String getVoiceUrl() {

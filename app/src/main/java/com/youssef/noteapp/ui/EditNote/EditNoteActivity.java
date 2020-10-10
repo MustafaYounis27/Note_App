@@ -78,10 +78,10 @@ public class EditNoteActivity extends AppCompatActivity
     private List<Uri> ImagesUri = new ArrayList<> ();
     private NoteModel noteModel;
     private AppDataBase db;
-    private FirebaseAuth auth;
     private DatabaseReference databaseReference;
-    String imageUri;
-    String[] images;
+    private String imageUri;
+    private String[] images;
+    private String uid;
 
     @Override
     protected void onStart() {
@@ -95,15 +95,12 @@ public class EditNoteActivity extends AppCompatActivity
         InitData ();
         OnItemCLick();
         OnBack ();
-        backgroun_color=noteModel.getBackground_color ();
-        text_color=noteModel.getText_color ();
-        setTextColor(text_color);
-        setBackgroundColor(backgroun_color);
     }
 
     private void initFirebase()
     {
-        auth = FirebaseAuth.getInstance ();
+        FirebaseAuth auth = FirebaseAuth.getInstance ();
+        uid = auth.getUid ();
         databaseReference = FirebaseDatabase.getInstance ().getReference ();
     }
 
@@ -485,8 +482,14 @@ public class EditNoteActivity extends AppCompatActivity
                 startActivity ( intent );
             }
         });
-        if(noteModel.getNote_id () != null)
+        if(noteModel.getNote_id () != null && uid != null)
             toolbar.getMenu ().findItem ( R.id.update_note ).setVisible ( true );
+
+        backgroun_color=noteModel.getBackground_color ();
+        text_color=noteModel.getText_color ();
+
+        setTextColor(text_color);
+        setBackgroundColor(backgroun_color);
     }
 
     private void undoActions()

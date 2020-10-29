@@ -13,6 +13,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.pdf.PdfDocument;
@@ -42,6 +43,7 @@ import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.youssef.noteapp.Dialogs.CustomDgClass;
 import com.youssef.noteapp.Dialogs.CustomOpenClass;
 import com.youssef.noteapp.R;
 import com.youssef.noteapp.data.local.AppDataBase;
@@ -82,12 +84,15 @@ public class EditNoteActivity extends AppCompatActivity
     private String imageUri;
     private String[] images;
     private String uid;
+    SharedPreferences sharedPref;
+    SharedPreferences.Editor editor;
 
     @Override
     protected void onStart() {
         super.onStart ();
         noteModel = (NoteModel) getIntent ().getSerializableExtra ( "noteModel" );
 
+        initPref();
         initFirebase();
         InitViews();
         InitClors();
@@ -95,6 +100,12 @@ public class EditNoteActivity extends AppCompatActivity
         InitData ();
         OnItemCLick();
         OnBack ();
+    }
+
+    private void initPref()
+    {
+        sharedPref = getPreferences(getApplicationContext ().MODE_PRIVATE);
+        editor = sharedPref.edit();
     }
 
     private void initFirebase()
@@ -235,29 +246,32 @@ public class EditNoteActivity extends AppCompatActivity
 
     private void update(final NoteModel noteModel)
     {
-        databaseReference.child ( "notes" ).child ( noteModel.getNote_id () ).addValueEventListener ( new ValueEventListener ()
+        if(uid == null)
         {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot)
-            {
-                NoteModel note = snapshot.getValue (NoteModel.class);
-                if(note != null)
-                {
-                    noteModel.setTitle ( note.getTitle () );
-                    noteModel.setSubject ( note.getSubject () );
-                    noteModel.setBackground_color ( note.getBackground_color () );
-                    noteModel.setText_color ( note.getText_color () );
-                    new updateNote ().execute ( noteModel );
-                    preparingImagesToSave ( note );
+            Intent share = new Intent ( getApplicationContext (), LoginActivity.class );
+            share.putExtra ( "update", "update" );
+            startActivity ( share );
+        }else {
+            databaseReference.child ( "notes" ).child ( noteModel.getNote_id () ).addListenerForSingleValueEvent ( new ValueEventListener () {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    NoteModel note = snapshot.getValue ( NoteModel.class );
+                    if (note != null) {
+                        noteModel.setTitle ( note.getTitle () );
+                        noteModel.setSubject ( note.getSubject () );
+                        noteModel.setBackground_color ( note.getBackground_color () );
+                        noteModel.setText_color ( note.getText_color () );
+                        new updateNote ().execute ( noteModel );
+                        preparingImagesToSave ( note );
+                    }
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error)
-            {
-                Toast.makeText ( getApplicationContext (), "error", Toast.LENGTH_SHORT ).show ();
-            }
-        } );
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText ( getApplicationContext (), "error", Toast.LENGTH_SHORT ).show ();
+                }
+            } );
+        }
     }
 
     private void preparingImagesToSave(NoteModel note)
@@ -388,8 +402,29 @@ public class EditNoteActivity extends AppCompatActivity
     @Override
     public void onBackPressed()
     {
-        super.onBackPressed ();
+        if(!sharedPref.getString ( "first","" ).equals ( "share" ))
+        {
+            final CustomDgClass cdd = new CustomDgClass ( this );
+            cdd.show ();
+            cdd.ok.setOnClickListener ( new View.OnClickListener () {
+                @Override
+                public void onClick(View v) {
+                    cdd.dismiss ();
+                    editor.putString ( "first", "share" );
+                    editor.apply ();
+                    saveData ();
+                    EditNoteActivity.super.onBackPressed ();
+                }
+            } );
+        }else
+            {
+                saveData ();
+                EditNoteActivity.super.onBackPressed ();
+            }
+    }
 
+    private void saveData()
+    {
         String title = TitleField.getText().toString();
         String subject = SubjectField.getText().toString();
         if (!title.isEmpty() && !subject.isEmpty() && !title.equals ( noteModel.getTitle ()) || !subject.equals ( noteModel.getSubject ()) || !backgroun_color.equals ( noteModel.getBackground_color () ) ) {
@@ -482,7 +517,7 @@ public class EditNoteActivity extends AppCompatActivity
                 startActivity ( intent );
             }
         });
-        if(noteModel.getNote_id () != null && uid != null)
+        if(noteModel.getNote_id () != null )
             toolbar.getMenu ().findItem ( R.id.update_note ).setVisible ( true );
 
         backgroun_color=noteModel.getBackground_color ();

@@ -19,7 +19,7 @@ import java.util.List;
 public class LoginActivity extends AppCompatActivity
 {
     NoteModel noteModel;
-    String noteId;
+    String noteId,update;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -30,7 +30,10 @@ public class LoginActivity extends AppCompatActivity
         noteId = getIntent ().getStringExtra ( "noteId" );
         noteModel = (NoteModel) getIntent ().getSerializableExtra ( "noteModel" );
         String backup = getIntent ().getStringExtra ( "backup" );
+        update = getIntent ().getStringExtra ( "update" );
 
+        if(update != null)
+            replaceFragment ( new LoginFragment (  ) );
         if(backup != null)
         {
             replaceFragment ( new LoginFragment ( 1 ) );
@@ -57,6 +60,7 @@ public class LoginActivity extends AppCompatActivity
 
         if(noteModel != null)
             startActivity ( new Intent ( getApplicationContext (), EditNoteActivity.class ) );
+        if(update != null){}
         else
             startActivity ( new Intent ( getApplicationContext (), MainActivity.class ) );
         finish ();

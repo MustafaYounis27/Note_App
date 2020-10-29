@@ -85,6 +85,10 @@ public class LoginFragment extends Fragment
         this.noteId=noteId;
     }
 
+    public LoginFragment() {
+
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
@@ -233,7 +237,6 @@ public class LoginFragment extends Fragment
     private void onBack()
     {
         requireActivity ().onBackPressed ();
-        requireActivity ().finish ();
     }
 
     private void checkFields(String email, String password)
@@ -266,16 +269,19 @@ public class LoginFragment extends Fragment
                 if(task.isSuccessful () && task.getResult ()!=null)
                 {
                     String backup = requireActivity ().getIntent ().getStringExtra ( "backup" );
-                    if(backup != null)
-                    {
-                        Intent intent = new Intent ( getContext (), MainActivity.class );
-                        intent.putExtra ( "backup", backup );
-                        startActivity ( intent );
-                        requireActivity ().finish ();
-                        dialog.dismiss ();
+                    String update = requireActivity ().getIntent ().getStringExtra ( "update" );
+                    if(update != null)
+                        onBack ();
+                    else {
+                        if (backup != null) {
+                            Intent intent = new Intent ( getContext (), MainActivity.class );
+                            intent.putExtra ( "backup", backup );
+                            startActivity ( intent );
+                            requireActivity ().finish ();
+                            dialog.dismiss ();
+                        } else
+                            uploading ( task.getResult ().getUser () );
                     }
-                    else
-                        uploading ( task.getResult ().getUser () );
                 }
                 else
                     {

@@ -19,6 +19,7 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
         android:layout_margin="15dp"
+        android:backgroundTint="#EF5D5D"
         android:clickable="true"
         android:elevation="20dp"
         android:outlineSpotShadowColor="#fff"

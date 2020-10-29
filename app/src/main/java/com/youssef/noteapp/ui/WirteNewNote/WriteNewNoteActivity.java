@@ -40,6 +40,7 @@ import com.youssef.noteapp.data.local.AppDataBase;
 import com.youssef.noteapp.models.NoteModel;
 import com.youssef.noteapp.ui.Attachment.AttachmentActivity;
 import com.youssef.noteapp.ui.Login.LoginActivity;
+import com.youssef.noteapp.ui.fragments.HomeFragment;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -71,6 +72,7 @@ public class WriteNewNoteActivity extends AppCompatActivity {
     public static final String ARABIC = "\u0627\u0644\u0633\u0639\u0631 \u0627\u0644\u0627\u062c\u0645\u0627\u0644\u064a";
     private SharedPreferences preferences;
     private SharedPreferences.Editor editor;
+    private String share;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,21 +118,57 @@ public class WriteNewNoteActivity extends AppCompatActivity {
         });
     }
 
-    class Insert extends AsyncTask<NoteModel, Void, Void> {
+    class Insert extends AsyncTask<NoteModel, Void, Void>
+    {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
         }
 
         @Override
-        protected Void doInBackground(NoteModel... noteModels) {
+        protected Void doInBackground(NoteModel... noteModels)
+        {
             db.Dao().Insert(noteModels);
             return null;
         }
 
         @Override
-        protected void onPostExecute(Void aVoid) {
+        protected void onPostExecute(Void aVoid)
+        {
             super.onPostExecute(aVoid);
+
+            if(share != null)
+            {
+                share = null;
+                new GetData ().execute ();
+            }
+        }
+    }
+
+    class GetData extends AsyncTask<Void,Void, List<NoteModel>>
+    {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected List<NoteModel> doInBackground(Void... voids)
+        {
+            return db.Dao ().GetAllNotes ();
+        }
+
+        @Override
+        protected void onPostExecute(List<NoteModel> noteModels)
+        {
+            super.onPostExecute(noteModels);
+
+            noteModel = noteModels.get ( noteModels.size ()-1 );
+
+            Intent share = new Intent ( getApplicationContext (), LoginActivity.class );
+            share.putExtra ( "noteModel", noteModel );
+            startActivity ( share );
+            finish ();
         }
     }
 
@@ -177,12 +215,9 @@ public class WriteNewNoteActivity extends AppCompatActivity {
                 backgroun_color = "#fff";
             }
             noteModel = new NoteModel ( title, subject, SaveImagesString, "", currentDateandTime, text_color, backgroun_color );
+            share = "share";
             new Insert ().execute ( noteModel );
         }
-        Intent share = new Intent ( getApplicationContext (), LoginActivity.class );
-        share.putExtra ( "noteModel", noteModel );
-        startActivity ( share );
-        finish ();
     }
 
     private void OnBack() {

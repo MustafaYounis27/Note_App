@@ -10,6 +10,7 @@ import androidx.room.Room;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.Intent;
@@ -23,8 +24,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -84,6 +89,8 @@ public class EditNoteActivity extends AppCompatActivity
     private String imageUri;
     private String[] images;
     private String uid;
+    private int check = 0;
+    public static int check2 = 0;
     SharedPreferences sharedPref;
     SharedPreferences.Editor editor;
 
@@ -100,6 +107,50 @@ public class EditNoteActivity extends AppCompatActivity
         InitData ();
         OnItemCLick();
         OnBack ();
+        onChange ();
+    }
+
+    public void onChange()
+    {
+        SubjectField.addTextChangedListener ( new TextWatcher () {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(s != null && check == 0)
+                {
+                    LayoutInflater factory = LayoutInflater.from( EditNoteActivity.this );
+                    final View AddCommentDialogView = factory.inflate(R.layout.custom_dlg, null);
+                    final AlertDialog alrentDialog = new AlertDialog.Builder( EditNoteActivity.this ).create();
+                    alrentDialog.setView(AddCommentDialogView);
+                    Button yes = AddCommentDialogView.findViewById(R.id.btn_yes);
+                    Button no = AddCommentDialogView.findViewById(R.id.btn_no);
+                    yes.setOnClickListener ( new View.OnClickListener () {
+                        @Override
+                        public void onClick(View v) {
+                            shareNote ();
+                            alrentDialog.dismiss ();
+                        }
+                    } );
+                    no.setOnClickListener ( new View.OnClickListener () {
+                        @Override
+                        public void onClick(View v) {
+                            alrentDialog.dismiss ();
+                        }
+                    } );
+                    alrentDialog.show ();
+                    check++;
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        } );
     }
 
     private void initPref()
@@ -402,11 +453,11 @@ public class EditNoteActivity extends AppCompatActivity
     @Override
     public void onBackPressed()
     {
-        if(!sharedPref.getString ( "first","" ).equals ( "share" ))
+        /*if(!sharedPref.getString ( "first","" ).equals ( "share" ))
         {
             final CustomDgClass cdd = new CustomDgClass ( this );
             cdd.show ();
-            cdd.ok.setOnClickListener ( new View.OnClickListener () {
+            cdd.yes.setOnClickListener ( new View.OnClickListener () {
                 @Override
                 public void onClick(View v) {
                     cdd.dismiss ();
@@ -420,7 +471,31 @@ public class EditNoteActivity extends AppCompatActivity
             {
                 saveData ();
                 EditNoteActivity.super.onBackPressed ();
+            }*/
+
+        LayoutInflater factory = LayoutInflater.from( EditNoteActivity.this );
+        final View AddCommentDialogView = factory.inflate(R.layout.custom_dlg, null);
+        final AlertDialog alrentDialog = new AlertDialog.Builder( EditNoteActivity.this ).create();
+        alrentDialog.setView(AddCommentDialogView);
+        Button yes = AddCommentDialogView.findViewById(R.id.btn_yes);
+        Button no = AddCommentDialogView.findViewById(R.id.btn_no);
+        yes.setOnClickListener ( new View.OnClickListener () {
+            @Override
+            public void onClick(View v) {
+                shareNote ();
+                check2 = 1;
+                alrentDialog.dismiss ();
             }
+        } );
+        no.setOnClickListener ( new View.OnClickListener () {
+            @Override
+            public void onClick(View v) {
+                saveData ();
+                alrentDialog.dismiss ();
+                EditNoteActivity.super.onBackPressed ();
+            }
+        } );
+        alrentDialog.show ();
     }
 
     private void saveData()
@@ -775,8 +850,8 @@ public class EditNoteActivity extends AppCompatActivity
         }else if (requestCode == 1)
         {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("image/*");
+                Intent intent = new Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
                 startActivityForResult(Intent.createChooser(intent, "Select Picture"), 505); //SELECT_PICTURES is simply a global int used to check the calling intent in onActivityResult
             } else {
                 Toast.makeText(this, "error permissions...", Toast.LENGTH_SHORT).show();

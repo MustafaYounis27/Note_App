@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:elevation="8dp"
+    android:layout_margin="10dp"
     >
 
     <LinearLayout
@@ -21,24 +22,48 @@
             android:layout_gravity="center"
             android:gravity="center"
             android:layout_margin="10dp"
-            android:text="you can click on 'SHARE' to upload changes in database"
+            android:text="Are you need to share it live ?"
             android:textColor="@android:color/white"
             android:textSize="20sp"
             android:textStyle="bold"
             />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            >
+
         <Button
-            android:id="@+id/btn_ok"
+            android:id="@+id/btn_yes"
             android:layout_width="100dp"
             android:layout_height="30dp"
             android:layout_gravity="center"
             android:background="@drawable/button_background"
             android:backgroundTint="@android:color/white"
             android:clickable="true"
-            android:text="ok"
+            android:text="yes"
             android:textColor="#EF5D5D"
             android:textStyle="bold"
+            android:layout_marginRight="10dp"
             />
+
+        <Button
+            android:id="@+id/btn_no"
+            android:layout_width="100dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center"
+            android:background="@drawable/button_background"
+            android:backgroundTint="@android:color/white"
+            android:clickable="true"
+            android:text="no"
+            android:textColor="#EF5D5D"
+            android:textStyle="bold"
+            android:layout_marginLeft="10dp"
+            />
+
+        </LinearLayout>
 
     </LinearLayout>
 

@@ -27,7 +27,7 @@
                 android:layout_height="match_parent"
                 android:textColor="@android:color/black"
                 android:textIsSelectable="true"
-                android:textSize="20sp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
                 />
 
         </androidx.appcompat.widget.Toolbar>

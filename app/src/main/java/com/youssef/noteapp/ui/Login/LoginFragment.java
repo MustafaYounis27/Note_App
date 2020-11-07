@@ -360,10 +360,15 @@ public class LoginFragment extends Fragment
                         noteModel.setNote_id ( noteId );
                         noteModel.setOnline_state ( 1 );
                         new updateNote ().execute ( noteModel );
-                        Intent intent = new Intent ( getContext (), EditNoteActivity.class );
-                        intent.putExtra ( "noteModel", noteModel );
-                        startActivity ( intent );
-                        requireActivity ().finish ();
+                        if(EditNoteActivity.check2 == 0) {
+                            Intent intent = new Intent ( getContext (), EditNoteActivity.class );
+                            intent.putExtra ( "noteModel", noteModel );
+                            startActivity ( intent );
+                            requireActivity ().finish ();
+                        }else
+                            {
+                                onBack ();
+                            }
                     }else
                         {
                             Toast.makeText ( getContext (), task.getException ().getMessage (), Toast.LENGTH_SHORT ).show ();

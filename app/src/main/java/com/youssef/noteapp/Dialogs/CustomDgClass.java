@@ -13,7 +13,7 @@ public class CustomDgClass extends Dialog implements android.view.View.OnClickLi
 
     public Activity c;
     public Dialog d;
-    public Button ok;
+    public Button yes, no;
 
     public CustomDgClass(Activity a) {
         super(a);
@@ -26,15 +26,24 @@ public class CustomDgClass extends Dialog implements android.view.View.OnClickLi
         super.onCreate(savedInstanceState);
         requestWindowFeature( Window.FEATURE_NO_TITLE);
         setContentView( R.layout.custom_dlg);
-        ok =  findViewById(R.id.btn_ok);
-        ok.setOnClickListener(this);
+        yes =  findViewById(R.id.btn_yes);
+        yes.setOnClickListener(this);
+        no = findViewById ( R.id.btn_no );
+        no.setOnClickListener ( this );
 
     }
 
     @Override
     public void onClick(View v) {
-        if (v.getId () == R.id.btn_ok) {
-            c.finish ();
+        switch (v.getId()) {
+            case R.id.btn_yes:
+                c.finish();
+                break;
+            case R.id.btn_no:
+                dismiss();
+                break;
+            default:
+                break;
         }
         dismiss();
     }

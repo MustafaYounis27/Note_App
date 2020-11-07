@@ -5,11 +5,13 @@
     <item
         android:id="@+id/update_note"
         android:title="Update note"
-        android:visible="false"
+        android:icon="@drawable/restore"
+        app:showAsAction="ifRoom"
         />
     <item
         android:id="@+id/share_note"
         android:title="Share"
+        android:icon="@drawable/backup"
         app:showAsAction="ifRoom"
         />
     <item
